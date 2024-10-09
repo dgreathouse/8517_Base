@@ -4,16 +4,81 @@
 
 package frc.robot.subsystems;
 
+
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.robot.lib.SwerveModuleConstants;
+import frc.robot.lib.g;
 
 
 /** Add your docs here. */
 public class SwerveModule {
     SwerveModuleConstants k;
-    SwerveModulePosition m_position;
+    public Translation2d m_location;
+    private TalonFX m_driveMotor;
+    private TalonFX m_steerMotor;
+    private CANcoder m_canCoder;
+    private SwerveModulePosition m_position;
+    private PIDController m_steerPID = new PIDController(g.SWERVE.MODULE.STEER.PID_kp, g.SWERVE.MODULE.STEER.PID_ki, 0);
     public SwerveModule(SwerveModuleConstants _k){
         k = _k;
-        m_position = new SwerveModulePosition();
+        m_location = new Translation2d(k.LOCATION_X_METER, k.LOCATION_Y_METER);
+        m_driveMotor = new TalonFX(k.DRIVE_CAN_ID, g.CAN_IDS_ROBORIO.NAME);
+        m_steerMotor = new TalonFX(k.STEER_CAN_ID, g.CAN_IDS_ROBORIO.NAME);
+        m_canCoder = new CANcoder(k.CANCODER_ID, g.CAN_IDS_ROBORIO.NAME);
+        
+        // Configure Drive Motor
+        TalonFXConfiguration driveConfigs = new TalonFXConfiguration();
+        driveConfigs.MotorOutput.Inverted = k.DRIVE_IS_REVERSED ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;
+        m_driveMotor.setNeutralMode(NeutralModeValue.Brake);
+        m_driveMotor.getConfigurator().apply(driveConfigs);
+
+        CurrentLimitsConfigs driveCurrentConfig = new CurrentLimitsConfigs()
+                                                    .withStatorCurrentLimit(70)
+                                                    .withStatorCurrentLimitEnable(true)
+                                                    .withSupplyCurrentLimit(70)
+                                                    .withSupplyCurrentLimitEnable(true);
+        m_driveMotor.getConfigurator().apply(driveCurrentConfig);
+
+        // Configure Steer Motor
+        m_steerPID.enableContinuousInput(-180.0, 180);
+        TalonFXConfiguration steerConfigs = new TalonFXConfiguration();
+        steerConfigs.MotorOutput.Inverted = k.STEER_IS_REVERSED ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;
+        m_steerMotor.getConfigurator().apply(steerConfigs);
+        m_steerMotor.setNeutralMode(NeutralModeValue.Brake);
+
+        // Configure CANCoder
+        CANcoderConfiguration cancoderConfigs = new CANcoderConfiguration();
+        cancoderConfigs.MagnetSensor.MagnetOffset = k.CANCODER_OFFSET_ROT;
+        m_canCoder.getConfigurator().apply(cancoderConfigs);
+        
+        // Set the offset position of the steer motor based on the CANCoder
+        m_steerMotor.setPosition(m_canCoder.getPosition().getValueAsDouble() * g.SWERVE.MODULE.STEER.GEAR_RATIO);
+    }
+    public SwerveModulePosition updatePosition(){
+        double drive_rot =  m_driveMotor.getPosition().getValueAsDouble();
+        double angle_rot =  m_steerMotor.getPosition().getValueAsDouble();
+        // anagle_rot is the Motor rotations. Apply the gear ratio to get wheel rotations for steer
+        angle_rot = angle_rot / g.SWERVE.MODULE.STEER.GEAR_RATIO;
+        /* And push them into a SwerveModuleState object to return */
+        m_position.distanceMeters = drive_rot / g.SWERVE.MODULE.DRIVE.WHEEL_MotRotPerMeter;
+        /* Angle is already in terms of steer rotations */
+        m_position.angle = Rotation2d.fromRotations(angle_rot);
+
+        return m_position;
+    }
+    public void setDesiredState(SwerveModuleState _state, boolean _enableSteer, boolean _enableDrive){
+        
     }
 }

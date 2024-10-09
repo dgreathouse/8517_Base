@@ -6,8 +6,18 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.kinematics.struct.SwerveModuleStateStruct;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.lib.SwerveModuleConstants;
 import frc.robot.lib.g;
@@ -15,7 +25,10 @@ import frc.robot.lib.g;
 public class Drivetrain extends SubsystemBase {
   Pigeon2 m_pigeon2;
   SwerveDriveKinematics m_kinematics;
-
+  SwerveDriveOdometry m_odometry;
+  Field2d m_field;
+  OdometryThread m_odometryThread;
+  private PIDController m_turnPID = new PIDController(g.DRIVETRAIN.TURN_KP, g.DRIVETRAIN.TURN_KI, g.DRIVETRAIN.TURN_KD);
   /** Creates a new Drivetrain. */
   public Drivetrain() {
 
@@ -28,41 +41,123 @@ public class Drivetrain extends SubsystemBase {
     // Define the swerve module constants for each module.
 
     g.SWERVE.Modules[0] = new SwerveModule(new SwerveModuleConstants(
-        "FL", 
+        "FL",
         10, false,
         20, false,
         1, 0,
         0, 0));
     g.SWERVE.Modules[1] = new SwerveModule(new SwerveModuleConstants(
-        "FR", 
+        "FR",
         11, false,
         21, false,
         2, 0,
         0, 0));
     g.SWERVE.Modules[2] = new SwerveModule(new SwerveModuleConstants(
-        "BR", 
+        "BR",
         12, false,
         22, false,
         3, 0,
         0, 0));
     g.SWERVE.Modules[3] = new SwerveModule(new SwerveModuleConstants(
-        "BL", 
+        "BL",
         13, false,
         23, false,
         4, 0,
         0, 0));
 
-    // Create a module locations for the Odometry
-    Translation2d[] locations = new Translation2d[g.SWERVE.MODULE.COUNT];
-    // Setup the module arrays with needed information
-    for(int i = 0; i < g.SWERVE.MODULE.COUNT; i++){
-      locations[i] = new Translation2d(g.SWERVE.Modules[i].k.LOCATION_X_METER,g.SWERVE.Modules[i].k.LOCATION_Y_METER);
+    for (int i = 0; i < g.SWERVE.Count; i++) {
+      g.SWERVE.Positions[i] = new SwerveModulePosition();
     }
+    updatePositions();
+    m_kinematics = new SwerveDriveKinematics(g.SWERVE.Modules[0].m_location, g.SWERVE.Modules[1].m_location,
+        g.SWERVE.Modules[2].m_location, g.SWERVE.Modules[3].m_location);
+    m_odometry = new SwerveDriveOdometry(m_kinematics, getRobotAngle(), g.SWERVE.Positions);
+    m_field = new Field2d();
+
+    m_turnPID.enableContinuousInput(-Math.PI, Math.PI);
+    m_turnPID.setTolerance(Math.toRadians(.1),1);
+
+    m_odometryThread = new OdometryThread();
+    m_odometryThread.start();
+  }
+
+  public void updatePositions() {
+    for (int i = 0; i < g.SWERVE.Count; i++) {
+      g.SWERVE.Positions[i] = g.SWERVE.Modules[i].updatePosition();
+    }
+  }
+
+  public Rotation2d getRobotAngle() {
+    return m_pigeon2.getRotation2d();
+  }
+
+  public void updateDashboard() {
+
+  }
+
+  public void driveRobotCentric(ChassisSpeeds _speeds) {
+    var swerveStates = m_kinematics.toSwerveModuleStates(_speeds);
+    setSwerveModules(swerveStates, true, true);
+  }
+
+  public void driveFieldCentric(ChassisSpeeds _speeds) {
+    var robotCentricSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(_speeds, getRobotAngle());
+    var swerveStates = m_kinematics.toSwerveModuleStates(robotCentricSpeeds);
+    setSwerveModules(swerveStates, true, true);
+  }
+
+  public void driveAngleFieldCentric(double _xSpeed, double _ySpeed, Rotation2d _targetAngle_deg, boolean _enableSteer, boolean _enableDrive) {
+    double rotationalSpeed = m_turnPID.calculate(getRobotAngle().getRadians(), Math.toRadians(g.ROBOT.AngleTarget_deg));
+    rotationalSpeed = MathUtil.applyDeadband(rotationalSpeed, 0.01);
+    var robotCentricSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(_xSpeed, _ySpeed, rotationalSpeed, getRobotAngle());
+    var swerveStates = m_kinematics.toSwerveModuleStates(robotCentricSpeeds);
+    setSwerveModules(swerveStates, _enableSteer, _enableDrive);    
+  }
+
+  public void drivePolarFieldCentric(double _driveAngle_deg, double _robotAngle_deg, double _speed_mps, boolean _enableSteer, boolean _enableDrive) {
+    double y = Math.sin(Units.degreesToRadians(_driveAngle_deg)) * _speed_mps;
+    double x = Math.cos(Units.degreesToRadians(_driveAngle_deg)) * _speed_mps;
+    driveAngleFieldCentric(x, y, new Rotation2d(Math.toRadians(_robotAngle_deg)), _enableSteer, _enableDrive);
+  }
+
+  public void setSwerveModules(SwerveModuleState[] _states, boolean _enableSteer, boolean _enableDrive) {
+    g.SWERVE.Modules[0].setDesiredState(_states[0], _enableSteer, _enableDrive);
+    g.SWERVE.Modules[1].setDesiredState(_states[1], _enableSteer, _enableDrive);
+    g.SWERVE.Modules[2].setDesiredState(_states[2], _enableSteer, _enableDrive);
+    g.SWERVE.Modules[3].setDesiredState(_states[3], _enableSteer, _enableDrive);
   }
 
   @Override
   public void periodic() {
-    g.ROBOT.AngleActual_deg = m_pigeon2.getYaw().getValueAsDouble();
+    g.ROBOT.AngleActual_deg = getRobotAngle().getDegrees();
     // This method will be called once per scheduler run
+  }
+
+  /* Perform swerve module updates in a separate thread to minimize latency */
+  private class OdometryThread extends Thread {
+    public OdometryThread() {
+      super();
+    }
+
+    @Override
+    public void run() {
+
+      /* Run as fast as possible, our signals will control the timing */
+      while (true) {
+        /* Now update odometry */
+        g.SWERVE.Positions[0] = g.SWERVE.Modules[0].updatePosition();
+        g.SWERVE.Positions[1] = g.SWERVE.Modules[1].updatePosition();
+        g.SWERVE.Positions[2] = g.SWERVE.Modules[2].updatePosition();
+        g.SWERVE.Positions[3] = g.SWERVE.Modules[3].updatePosition();
+
+        g.ROBOT.Pose = m_odometry.update(getRobotAngle(), g.SWERVE.Positions);
+        m_field.setRobotPose(g.ROBOT.Pose);
+        try {
+          Thread.sleep(5);
+        } catch (InterruptedException e) {
+          System.out.println(e.getMessage());
+        }
+      }
+    }
   }
 }
