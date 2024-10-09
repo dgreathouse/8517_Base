@@ -17,6 +17,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.kinematics.struct.SwerveModuleStateStruct;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.lib.SwerveModuleConstants;
@@ -29,6 +30,7 @@ public class Drivetrain extends SubsystemBase {
   Field2d m_field;
   OdometryThread m_odometryThread;
   private PIDController m_turnPID = new PIDController(g.DRIVETRAIN.TURN_KP, g.DRIVETRAIN.TURN_KI, g.DRIVETRAIN.TURN_KD);
+
   /** Creates a new Drivetrain. */
   public Drivetrain() {
 
@@ -75,7 +77,7 @@ public class Drivetrain extends SubsystemBase {
     m_field = new Field2d();
 
     m_turnPID.enableContinuousInput(-Math.PI, Math.PI);
-    m_turnPID.setTolerance(Math.toRadians(.1),1);
+    m_turnPID.setTolerance(Math.toRadians(.1), 1);
 
     m_odometryThread = new OdometryThread();
     m_odometryThread.start();
@@ -106,18 +108,19 @@ public class Drivetrain extends SubsystemBase {
     setSwerveModules(swerveStates, true, true);
   }
 
-  public void driveAngleFieldCentric(double _xSpeed, double _ySpeed, Rotation2d _targetAngle_deg, boolean _enableSteer, boolean _enableDrive) {
+  public void driveAngleFieldCentric(double _xSpeed, double _ySpeed, boolean _enableSteer, boolean _enableDrive) {
     double rotationalSpeed = m_turnPID.calculate(getRobotAngle().getRadians(), Math.toRadians(g.ROBOT.AngleTarget_deg));
     rotationalSpeed = MathUtil.applyDeadband(rotationalSpeed, 0.01);
     var robotCentricSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(_xSpeed, _ySpeed, rotationalSpeed, getRobotAngle());
     var swerveStates = m_kinematics.toSwerveModuleStates(robotCentricSpeeds);
-    setSwerveModules(swerveStates, _enableSteer, _enableDrive);    
+    setSwerveModules(swerveStates, _enableSteer, _enableDrive);
   }
 
-  public void drivePolarFieldCentric(double _driveAngle_deg, double _robotAngle_deg, double _speed_mps, boolean _enableSteer, boolean _enableDrive) {
+  public void drivePolarFieldCentric(double _driveAngle_deg, double _speed_mps, boolean _enableSteer,
+      boolean _enableDrive) {
     double y = Math.sin(Units.degreesToRadians(_driveAngle_deg)) * _speed_mps;
     double x = Math.cos(Units.degreesToRadians(_driveAngle_deg)) * _speed_mps;
-    driveAngleFieldCentric(x, y, new Rotation2d(Math.toRadians(_robotAngle_deg)), _enableSteer, _enableDrive);
+    driveAngleFieldCentric(x, y, _enableSteer, _enableDrive);
   }
 
   public void setSwerveModules(SwerveModuleState[] _states, boolean _enableSteer, boolean _enableDrive) {
@@ -127,9 +130,38 @@ public class Drivetrain extends SubsystemBase {
     g.SWERVE.Modules[3].setDesiredState(_states[3], _enableSteer, _enableDrive);
   }
 
+  public void setAngleTarget() {
+    double x = g.OI.driveController.getLeftX();
+    double y = g.OI.driveController.getLeftY();
+    double hyp = Math.hypot(x, y);
+    double actualAngle = 0.0;
+    if (Math.abs(hyp) > g.OI.ANGLE_TARGET_DEADBAND) {
+      if (actualAngle >= -22.5 && actualAngle <= 22.5) { // North
+        g.ROBOT.AngleTarget_deg = 0.0;
+      } else if (actualAngle >= -67.5 && actualAngle < -22.5) { // North East
+        g.ROBOT.AngleTarget_deg = -45.0;
+      } else if (actualAngle >= -112.5 && actualAngle < -67.5) { // East
+        g.ROBOT.AngleTarget_deg = -90.0;
+      } else if (actualAngle >= -157.5 && actualAngle < -112.5) { // South East
+        g.ROBOT.AngleTarget_deg = -135.0;
+      } else if ((actualAngle >= 157.5 && actualAngle <= 180.0) || (actualAngle <= -157.5 && actualAngle > -179.99)) { // South
+        g.ROBOT.AngleTarget_deg = 180.0;
+      } else if (actualAngle <= 67.5 && actualAngle > 22.5) { // North West
+        g.ROBOT.AngleTarget_deg = 45.0;
+      } else if (actualAngle <= 112.5 && actualAngle > 67.5) { // West
+        g.ROBOT.AngleTarget_deg = 90.0;
+      } else if (actualAngle <= 157.5 && actualAngle > 112.5) { // South West
+        g.ROBOT.AngleTarget_deg = 135.0;
+      }
+    }
+  }
+  public void setAngleTarget(double _angle_deg){
+    g.ROBOT.AngleTarget_deg = _angle_deg;
+  }
   @Override
   public void periodic() {
     g.ROBOT.AngleActual_deg = getRobotAngle().getDegrees();
+    setAngleTarget();
     // This method will be called once per scheduler run
   }
 

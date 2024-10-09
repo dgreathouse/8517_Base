@@ -6,6 +6,7 @@ package frc.robot.lib;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import frc.robot.subsystems.SwerveModule;
 
 /** Add your docs here. */
@@ -39,9 +40,11 @@ public class g {
     public static class OI {
         // Driver controller
         public static final int DRIVER_CONTROLLER_PORT = 0;
-
+        public static final CommandPS5Controller driveController = new CommandPS5Controller(DRIVER_CONTROLLER_PORT);
+        public static final double ANGLE_TARGET_DEADBAND = 0.8;
         // Operator controller
         public static final int OPERATOR_CONTROLLER_PORT = 1;
+        public static final CommandPS5Controller operatorController = new CommandPS5Controller(OPERATOR_CONTROLLER_PORT);
     }
 
     public static class SWERVE {
@@ -111,6 +114,7 @@ public class g {
         public static final double TURN_KP = 10;
         public static final double TURN_KI = 0.0;
         public static final double TURN_KD = 0.0;
+        public static DriveMode driveMode = DriveMode.ANGLE_FIELD_CENTRIC;
     }
 
 }
