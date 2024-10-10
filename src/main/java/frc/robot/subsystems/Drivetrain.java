@@ -145,7 +145,9 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
   public void setDriveMode(DriveMode _driveMode) {
     g.DRIVETRAIN.driveMode = _driveMode;
   }
-
+  public boolean isRotateAtTarget(){
+    return m_turnPID.atSetpoint();
+  }
   public void setDriveSpeedMultiplier(double _val) {
     g.DRIVETRAIN.driveSpeedMultiplier = _val;
   }
