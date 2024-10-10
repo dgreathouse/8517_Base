@@ -4,9 +4,13 @@
 
 package frc.robot.lib;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.SwerveModule;
 
 /** Add your docs here. */
@@ -36,12 +40,25 @@ public class g {
         public static Pose2d Pose = new Pose2d();
 
     }
-
+    public static class DASHBOARD{
+        public static Set<IUpdateDashboard> updates = new HashSet<>();
+    }
     public static class OI {
         // Driver controller
         public static final int DRIVER_CONTROLLER_PORT = 0;
         public static final CommandPS5Controller driveController = new CommandPS5Controller(DRIVER_CONTROLLER_PORT);
         public static final double ANGLE_TARGET_DEADBAND = 0.8;
+
+        public static Trigger DRIVER_DRIVE_MODE_FIELDCENTRIC = driveController.povLeft();
+        public static Trigger DRIVER_DRIVE_MODE_ROBOTCENTRIC = driveController.povRight();
+        public static Trigger DRIVER_DRIVE_MODE_ANGLEFIELDCENTRIC = driveController.povDown();
+        public static Trigger DRIVER_DRIVE_MODE_ROTATEFIELDCENTRIC = driveController.povUp();
+
+        public static Trigger DRIVER_DRIVE_MODE_SPEED_HI = driveController.R1();
+        public static Trigger DRIVER_DRIVE_MODE_SPEED_LOW = driveController.L1();
+
+        public static Trigger DRIVER_RESET_YAW = driveController.create();
+
         // Operator controller
         public static final int OPERATOR_CONTROLLER_PORT = 1;
         public static final CommandPS5Controller operatorController = new CommandPS5Controller(OPERATOR_CONTROLLER_PORT);
@@ -51,8 +68,7 @@ public class g {
         public static final int Count = 4;
         public static SwerveModule[] Modules = new SwerveModule[Count];
         public static volatile SwerveModulePosition[] Positions = new SwerveModulePosition[Count];
-        public static SwerveModuleConstants[] Constants = new SwerveModuleConstants[Count];
-
+        //public static SwerveModuleConstants[] Constants = new SwerveModuleConstants[Count];
 
         public static class MODULE {
 
@@ -115,6 +131,8 @@ public class g {
         public static final double TURN_KI = 0.0;
         public static final double TURN_KD = 0.0;
         public static DriveMode driveMode = DriveMode.ANGLE_FIELD_CENTRIC;
+        public static double driveSpeedMultiplier = 1.0;
+        public static final double ROTATE_FIELDCENTRIC_SPEED_RadPSec = 10.0;
     }
 
 }

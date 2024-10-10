@@ -8,22 +8,21 @@ import com.ctre.phoenix6.hardware.Pigeon2;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.kinematics.struct.SwerveModuleStateStruct;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.lib.DriveMode;
+import frc.robot.lib.IUpdateDashboard;
 import frc.robot.lib.SwerveModuleConstants;
 import frc.robot.lib.g;
 
-public class Drivetrain extends SubsystemBase {
+public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
   Pigeon2 m_pigeon2;
   SwerveDriveKinematics m_kinematics;
   SwerveDriveOdometry m_odometry;
@@ -81,6 +80,8 @@ public class Drivetrain extends SubsystemBase {
 
     m_odometryThread = new OdometryThread();
     m_odometryThread.start();
+
+    g.DASHBOARD.updates.add(this);
   }
 
   public void updatePositions() {
@@ -130,6 +131,25 @@ public class Drivetrain extends SubsystemBase {
     g.SWERVE.Modules[3].setDesiredState(_states[3], _enableSteer, _enableDrive);
   }
 
+  public void fastStop() {
+    g.SWERVE.Modules[0].setDesiredState(new SwerveModuleState(0.0,new Rotation2d(Math.toRadians(45))), true, true); // FL
+    g.SWERVE.Modules[1].setDesiredState(new SwerveModuleState(0.0,new Rotation2d(Math.toRadians(-45))), true, true); // FR
+    g.SWERVE.Modules[2].setDesiredState(new SwerveModuleState(0.0,new Rotation2d(Math.toRadians(135))), true, true); // BR
+    g.SWERVE.Modules[3].setDesiredState(new SwerveModuleState(0.0,new Rotation2d(Math.toRadians(-135))), true, true); // BL
+  }
+
+  public void resetYaw() {
+    m_pigeon2.setYaw(0.0);
+  }
+
+  public void setDriveMode(DriveMode _driveMode) {
+    g.DRIVETRAIN.driveMode = _driveMode;
+  }
+
+  public void setDriveSpeedMultiplier(double _val) {
+    g.DRIVETRAIN.driveSpeedMultiplier = _val;
+  }
+
   public void setAngleTarget() {
     double x = g.OI.driveController.getLeftX();
     double y = g.OI.driveController.getLeftY();
@@ -155,9 +175,11 @@ public class Drivetrain extends SubsystemBase {
       }
     }
   }
-  public void setAngleTarget(double _angle_deg){
+
+  public void setAngleTarget(double _angle_deg) {
     g.ROBOT.AngleTarget_deg = _angle_deg;
   }
+
   @Override
   public void periodic() {
     g.ROBOT.AngleActual_deg = getRobotAngle().getDegrees();

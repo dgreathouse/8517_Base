@@ -5,11 +5,7 @@
 package frc.robot.lib;
 
 /** Add your docs here. */
-public enum DriveMode {
-    ANGLE_FIELD_CENTRIC,
-    FIELD_CENTRIC,
-    ROBOT_CENTRIC,
-    POLAR_CENTRIC,
-    ROTATE_FIELD_CENTRIC,
-    FAST_STOP
-}
+public interface IUpdateDashboard {
+    public void updateDashboard();
+    
+} 

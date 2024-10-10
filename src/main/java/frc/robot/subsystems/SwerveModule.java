@@ -8,11 +8,14 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -31,6 +34,10 @@ public class SwerveModule {
     private CANcoder m_canCoder;
     private SwerveModulePosition m_position;
     private PIDController m_steerPID = new PIDController(g.SWERVE.MODULE.STEER.PID_kp, g.SWERVE.MODULE.STEER.PID_ki, 0);
+    private PIDController m_drivePID = new PIDController(g.SWERVE.MODULE.DRIVE.PID_kp,g.SWERVE.MODULE.DRIVE.PID_ki, 0.0);
+    private SimpleMotorFeedforward m_driveFF = new SimpleMotorFeedforward(g.SWERVE.MODULE.DRIVE.PID_ks, g.SWERVE.MODULE.DRIVE.PID_kv);
+    private VoltageOut m_steerVoltageOut = new VoltageOut(0.0);
+    private VoltageOut m_driveVoltageOut = new VoltageOut(0.0);
     public SwerveModule(SwerveModuleConstants _k){
         k = _k;
         m_location = new Translation2d(k.LOCATION_X_METER, k.LOCATION_Y_METER);
@@ -78,7 +85,29 @@ public class SwerveModule {
 
         return m_position;
     }
+    public double getSteerActualAngle(){
+        return m_position.angle.getDegrees() * 360 / g.SWERVE.MODULE.STEER.GEAR_RATIO;
+    }
     public void setDesiredState(SwerveModuleState _state, boolean _enableSteer, boolean _enableDrive){
+        SwerveModuleState optimized = SwerveModuleState.optimize(_state, m_position.angle);
         
+        if(_enableSteer){
+            
+            double steerVolts = m_steerPID.calculate(getSteerActualAngle(), optimized.angle.getDegrees());
+            m_steerMotor.setControl(m_steerVoltageOut.withOutput(steerVolts).withEnableFOC(true));
+          //  m_steerMotor.setControl(null);
+        }else {
+            m_steerMotor.setControl(m_steerVoltageOut.withOutput(0).withEnableFOC(true));
+        }
+        if(_enableDrive){
+            double driveSetVelocity_mps = optimized.speedMetersPerSecond * g.DRIVETRAIN.driveSpeedMultiplier;
+            double driveVolts = m_drivePID.calculate(m_driveMotor.getVelocity().getValueAsDouble() / g.SWERVE.MODULE.DRIVE.WHEEL_MotRotPerMeter, driveSetVelocity_mps);
+            driveVolts = MathUtil.clamp(driveVolts, -6, 6);
+            driveVolts = driveVolts + m_driveFF.calculate(driveSetVelocity_mps);
+
+            m_driveMotor.setControl(m_driveVoltageOut.withOutput(driveVolts).withEnableFOC(true));
+        }else{
+            m_driveMotor.setControl(m_driveVoltageOut.withOutput(0).withEnableFOC(true));
+        }
     }
 }

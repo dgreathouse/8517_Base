@@ -59,14 +59,20 @@ public class DrivetrainDefaultCommand extends Command {
         m_drive.driveFieldCentric(m_speeds);
         break;
       case ANGLE_FIELD_CENTRIC:
-        
         m_drive.driveAngleFieldCentric(m_speeds.vxMetersPerSecond, m_speeds.vyMetersPerSecond, true, true);
         break;
       case POLAR_CENTRIC:
+        // Do nothing in teleop since this is used in autonomous
         break;
       case ROBOT_CENTRIC:
+        m_drive.driveFieldCentric(m_speeds);
         break;
       case ROTATE_FIELD_CENTRIC:
+        m_speeds.omegaRadiansPerSecond = g.DRIVETRAIN.ROTATE_FIELDCENTRIC_SPEED_RadPSec;
+        m_drive.driveFieldCentric(m_speeds);
+        break;
+      case FAST_STOP:
+        
         break;
       default:
         break;
