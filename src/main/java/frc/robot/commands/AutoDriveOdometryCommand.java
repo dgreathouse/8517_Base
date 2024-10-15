@@ -27,6 +27,7 @@ public class AutoDriveOdometryCommand extends Command {
   boolean m_isWheelRotateFinished = false;
   Timer m_timer = new Timer();
   double m_rampUpTime = 0.5;
+  boolean m_isFastStop = false;
 
   /** Rotate robot to g.ROBOT.AngleTarget_deg, Align steer wheels for 0.5 seconds, 
    *  ramp up drive speed and drive to Pose. Finish by setting DriveMode to FastStop 
@@ -39,8 +40,11 @@ public class AutoDriveOdometryCommand extends Command {
     m_drive = RobotContainer.m_drivetrain;
     m_poseDesired = _pose;
     m_driveSpeed = _speed;
-    
     addRequirements(m_drive);// here to declare subsystem dependencies.
+  }
+  public AutoDriveOdometryCommand(Pose2d _pose, double _speed, boolean _isFastStop) {
+    this(_pose,_speed);
+    m_isFastStop = _isFastStop;
   }
 
   // Called when the command is initially scheduled.
@@ -100,7 +104,11 @@ public class AutoDriveOdometryCommand extends Command {
   @Override
   public boolean isFinished() {
     if (m_drivePID.atSetpoint()) {
-      g.DRIVETRAIN.driveMode = DriveMode.FAST_STOP;
+      if(m_isFastStop){
+         g.DRIVETRAIN.driveMode = DriveMode.FAST_STOP;
+      }{
+        // TODO: Don't want to stop, The next command should keep moving and nothing is needed here.
+      }
       m_isFinished = true;
     }
     return m_isFinished;

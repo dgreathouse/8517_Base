@@ -22,12 +22,9 @@ public class AutoDriveTimeVelCommand extends Command {
   double m_rampUpTime_sec;
   double m_rampDownTime_sec;
   double m_currentSpeed = 0;
-  boolean m_goToNote;
-  boolean m_goToApril;
-  boolean m_enableStartSteering;
   double m_driveAngleAdjusted = m_driveAngle;
   /** Creates a new AutoDriveTimeVelCommand. */
-  public AutoDriveTimeVelCommand(double _speed_mps, double _driveAngle, double _robotAngle, double _timeOut_sec, double _rampUpTime_sec, double _rampDownTime_sec,  boolean _enableStartSteering) {
+  public AutoDriveTimeVelCommand(double _speed_mps, double _driveAngle, double _robotAngle, double _timeOut_sec, double _rampUpTime_sec, double _rampDownTime_sec) {
     m_drive = RobotContainer.m_drivetrain;
     m_timeOut_sec = _timeOut_sec;
     m_driveAngle = _driveAngle;
@@ -36,7 +33,6 @@ public class AutoDriveTimeVelCommand extends Command {
     m_rampUpTime_sec = _rampUpTime_sec;
     m_rampDownTime_sec = _rampDownTime_sec;
     m_currentSpeed = m_speed;
-    m_enableStartSteering = _enableStartSteering;
     addRequirements(m_drive);
   }
 

@@ -65,7 +65,7 @@ public class g {
     }
 
     public static class SWERVE {
-        public static final int Count = 4;
+        public static final int Count = 3;
         public static SwerveModule[] Modules = new SwerveModule[Count];
         public static volatile SwerveModulePosition[] Positions = new SwerveModulePosition[Count];
         //public static SwerveModuleConstants[] Constants = new SwerveModuleConstants[Count];
@@ -115,17 +115,14 @@ public class g {
                 public static final double GEAR_RATIO_TO_CANCODER = GEAR_RATIO * CANCODER_GEAR_RATIO;
             }
         }
-
-        public static class CHASSIS {
-            public static final double WHEEL_BASE_Y_m = 0.47738;
-            public static final double WHEEL_BASE_X_m = 0.47851;
-            private static final double WHEEL_BASE_XY_AVG_m = (WHEEL_BASE_Y_m + WHEEL_BASE_X_m) / 2.0;
-            private static final double WHEEL_BASE_CIRCUMFERENCE_m = Math.PI * WHEEL_BASE_XY_AVG_m;
-            private static final double WHEEL_BASE_MeterPerRad = WHEEL_BASE_CIRCUMFERENCE_m / (2 * Math.PI);
-        }
-
     }
-
+    public static class CHASSIS {
+        public static final double WHEEL_BASE_Y_m = 0.47738;
+        public static final double WHEEL_BASE_X_m = 0.47851;
+        private static final double WHEEL_BASE_XY_AVG_m = (WHEEL_BASE_Y_m + WHEEL_BASE_X_m) / 2.0;
+        private static final double WHEEL_BASE_CIRCUMFERENCE_m = Math.PI * WHEEL_BASE_XY_AVG_m;
+        private static final double WHEEL_BASE_MeterPerRad = WHEEL_BASE_CIRCUMFERENCE_m / (2 * Math.PI);
+    }
     public static class DRIVETRAIN {
         public static final double TURN_KP = 10;
         public static final double TURN_KI = 0.0;

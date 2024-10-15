@@ -4,9 +4,12 @@
 
 package frc.robot.subsystems;
 
+import java.sql.Driver;
 
+import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.OpenLoopRampsConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -24,59 +27,75 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.robot.lib.SwerveModuleConstants;
 import frc.robot.lib.g;
 
-
 /** Add your docs here. */
 public class SwerveModule {
-    SwerveModuleConstants k;
+    SwerveModuleConstants m_k;
     public Translation2d m_location;
     private TalonFX m_driveMotor;
     private TalonFX m_steerMotor;
     private CANcoder m_canCoder;
     private SwerveModulePosition m_position;
     private PIDController m_steerPID = new PIDController(g.SWERVE.MODULE.STEER.PID_kp, g.SWERVE.MODULE.STEER.PID_ki, 0);
-    private PIDController m_drivePID = new PIDController(g.SWERVE.MODULE.DRIVE.PID_kp,g.SWERVE.MODULE.DRIVE.PID_ki, 0.0);
+    private PIDController m_drivePID = new PIDController(g.SWERVE.MODULE.DRIVE.PID_kp, g.SWERVE.MODULE.DRIVE.PID_ki, 0);
     private SimpleMotorFeedforward m_driveFF = new SimpleMotorFeedforward(g.SWERVE.MODULE.DRIVE.PID_ks, g.SWERVE.MODULE.DRIVE.PID_kv);
     private VoltageOut m_steerVoltageOut = new VoltageOut(0.0);
     private VoltageOut m_driveVoltageOut = new VoltageOut(0.0);
-    public SwerveModule(SwerveModuleConstants _k){
-        k = _k;
-        m_location = new Translation2d(k.LOCATION_X_METER, k.LOCATION_Y_METER);
-        m_driveMotor = new TalonFX(k.DRIVE_CAN_ID, g.CAN_IDS_ROBORIO.NAME);
-        m_steerMotor = new TalonFX(k.STEER_CAN_ID, g.CAN_IDS_ROBORIO.NAME);
-        m_canCoder = new CANcoder(k.CANCODER_ID, g.CAN_IDS_ROBORIO.NAME);
-        
+
+    public SwerveModule(SwerveModuleConstants _k) {
+        StatusCode status;
+        m_k = _k;
+        m_location = new Translation2d(m_k.LOCATION_X_METER, m_k.LOCATION_Y_METER);
+        m_driveMotor = new TalonFX(m_k.DRIVE_CAN_ID, g.CAN_IDS_ROBORIO.NAME);
+        m_steerMotor = new TalonFX(m_k.STEER_CAN_ID, g.CAN_IDS_ROBORIO.NAME);
+        m_canCoder = new CANcoder(m_k.CANCODER_ID, g.CAN_IDS_ROBORIO.NAME);
+
         // Configure Drive Motor
         TalonFXConfiguration driveConfigs = new TalonFXConfiguration();
-        driveConfigs.MotorOutput.Inverted = k.DRIVE_IS_REVERSED ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;
+        driveConfigs.MotorOutput.Inverted = m_k.DRIVE_IS_REVERSED ? InvertedValue.Clockwise_Positive
+                : InvertedValue.CounterClockwise_Positive;
+                
+        driveConfigs.withOpenLoopRamps(new OpenLoopRampsConfigs().withVoltageOpenLoopRampPeriod(1));
         m_driveMotor.setNeutralMode(NeutralModeValue.Brake);
-        m_driveMotor.getConfigurator().apply(driveConfigs);
+
+
+        status = m_driveMotor.getConfigurator().apply(driveConfigs);
+        System.out.println(m_k.NAME + " Drive Motor TalonFX Config Status =" + status.toString());
 
         CurrentLimitsConfigs driveCurrentConfig = new CurrentLimitsConfigs()
-                                                    .withStatorCurrentLimit(70)
-                                                    .withStatorCurrentLimitEnable(true)
-                                                    .withSupplyCurrentLimit(70)
-                                                    .withSupplyCurrentLimitEnable(true);
-        m_driveMotor.getConfigurator().apply(driveCurrentConfig);
+                .withStatorCurrentLimit(50)
+                .withStatorCurrentLimitEnable(true)
+                .withSupplyCurrentLimit(50)
+                .withSupplyCurrentLimitEnable(true);
+
+        status = m_driveMotor.getConfigurator().apply(driveCurrentConfig);
+        System.out.println(m_k.NAME + " Drive Motor Current Config Status =" + status.toString());
 
         // Configure Steer Motor
         m_steerPID.enableContinuousInput(-180.0, 180);
         TalonFXConfiguration steerConfigs = new TalonFXConfiguration();
-        steerConfigs.MotorOutput.Inverted = k.STEER_IS_REVERSED ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;
-        m_steerMotor.getConfigurator().apply(steerConfigs);
-        m_steerMotor.setNeutralMode(NeutralModeValue.Brake);
+        steerConfigs.MotorOutput.Inverted = m_k.STEER_IS_REVERSED ? InvertedValue.Clockwise_Positive
+                : InvertedValue.CounterClockwise_Positive;
 
+        steerConfigs.withOpenLoopRamps(new OpenLoopRampsConfigs().withVoltageOpenLoopRampPeriod(1));
+        status = m_steerMotor.getConfigurator().apply(steerConfigs);
+        System.out.println(m_k.NAME + " Steer Motor TalonFX Config Status =" + status.toString());
+        m_steerMotor.setNeutralMode(NeutralModeValue.Brake);
+        
         // Configure CANCoder
         CANcoderConfiguration cancoderConfigs = new CANcoderConfiguration();
-        cancoderConfigs.MagnetSensor.MagnetOffset = k.CANCODER_OFFSET_ROT;
-        m_canCoder.getConfigurator().apply(cancoderConfigs);
+        cancoderConfigs.MagnetSensor.MagnetOffset = m_k.CANCODER_OFFSET_ROT;
         
+        status = m_canCoder.getConfigurator().apply(cancoderConfigs);
+        System.out.println(m_k.NAME + " m_canCoder Config Status =" + status.toString());
         // Set the offset position of the steer motor based on the CANCoder
         m_steerMotor.setPosition(m_canCoder.getPosition().getValueAsDouble() * g.SWERVE.MODULE.STEER.GEAR_RATIO);
     }
-    public SwerveModulePosition updatePosition(){
-        double drive_rot =  m_driveMotor.getPosition().getValueAsDouble();
-        double angle_rot =  m_steerMotor.getPosition().getValueAsDouble();
-        // anagle_rot is the Motor rotations. Apply the gear ratio to get wheel rotations for steer
+
+    public SwerveModulePosition updatePosition() {
+        double drive_rot = m_driveMotor.getPosition().getValueAsDouble();
+        double angle_rot = m_steerMotor.getPosition().getValueAsDouble();
+        // anagle_rot is the Motor rotations. Apply the gear ratio to get wheel
+        // rotations for steer
         angle_rot = angle_rot / g.SWERVE.MODULE.STEER.GEAR_RATIO;
         /* And push them into a SwerveModuleState object to return */
         m_position.distanceMeters = drive_rot / g.SWERVE.MODULE.DRIVE.WHEEL_MotRotPerMeter;
@@ -85,28 +104,33 @@ public class SwerveModule {
 
         return m_position;
     }
-    public double getSteerActualAngle(){
+
+    public double getSteerActualAngle() {
         return m_position.angle.getDegrees() * 360 / g.SWERVE.MODULE.STEER.GEAR_RATIO;
     }
-    public void setDesiredState(SwerveModuleState _state, boolean _enableSteer, boolean _enableDrive){
+
+    public void setDesiredState(SwerveModuleState _state, boolean _enableSteer, boolean _enableDrive) {
         SwerveModuleState optimized = SwerveModuleState.optimize(_state, m_position.angle);
-        
-        if(_enableSteer){
-            
+        /* ------------------------------------- Steer --------------------------------------------------- */
+        if (_enableSteer) {
+
             double steerVolts = m_steerPID.calculate(getSteerActualAngle(), optimized.angle.getDegrees());
             m_steerMotor.setControl(m_steerVoltageOut.withOutput(steerVolts).withEnableFOC(true));
-          //  m_steerMotor.setControl(null);
-        }else {
+            // m_steerMotor.setControl(null);
+        } else {
             m_steerMotor.setControl(m_steerVoltageOut.withOutput(0).withEnableFOC(true));
         }
-        if(_enableDrive){
+        /* ------------------------------------- Drive --------------------------------------------------- */
+        if (_enableDrive) {
             double driveSetVelocity_mps = optimized.speedMetersPerSecond * g.DRIVETRAIN.driveSpeedMultiplier;
-            double driveVolts = m_drivePID.calculate(m_driveMotor.getVelocity().getValueAsDouble() / g.SWERVE.MODULE.DRIVE.WHEEL_MotRotPerMeter, driveSetVelocity_mps);
+            double driveVolts = m_drivePID.calculate(
+                    m_driveMotor.getVelocity().getValueAsDouble() / g.SWERVE.MODULE.DRIVE.WHEEL_MotRotPerMeter,
+                    driveSetVelocity_mps);
             driveVolts = MathUtil.clamp(driveVolts, -6, 6);
             driveVolts = driveVolts + m_driveFF.calculate(driveSetVelocity_mps);
 
             m_driveMotor.setControl(m_driveVoltageOut.withOutput(driveVolts).withEnableFOC(true));
-        }else{
+        } else {
             m_driveMotor.setControl(m_driveVoltageOut.withOutput(0).withEnableFOC(true));
         }
     }

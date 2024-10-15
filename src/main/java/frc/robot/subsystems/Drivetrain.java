@@ -36,36 +36,38 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
     initialize();
   }
 
+  @SuppressWarnings("unused")
   public void initialize() {
     // Define the IMU/Gyro called Pigeon2 that is on the CANIvore Bus network
     m_pigeon2 = new Pigeon2(g.CAN_IDS_CANIVORE.PIGEON2, g.CAN_IDS_CANIVORE.NAME);
     // Define the swerve module constants for each module.
-
+    // TODO: Change this if g.SWERVE.Count changes from 3 to 4.
     g.SWERVE.Modules[0] = new SwerveModule(new SwerveModuleConstants(
         "FL",
-        10, false,
-        20, false,
-        1, 0,
-        0, 0));
+        12, false,
+        22, true,
+        2, 0.2234,
+        g.CHASSIS.WHEEL_BASE_X_m /2.0, g.CHASSIS.WHEEL_BASE_Y_m / 2.0));
     g.SWERVE.Modules[1] = new SwerveModule(new SwerveModuleConstants(
         "FR",
-        11, false,
-        21, false,
-        2, 0,
-        0, 0));
+        13, true,
+        23, true,
+        3, 0.03637,
+        g.CHASSIS.WHEEL_BASE_X_m /2.0, -g.CHASSIS.WHEEL_BASE_Y_m / 2.0));
     g.SWERVE.Modules[2] = new SwerveModule(new SwerveModuleConstants(
         "BR",
-        12, false,
-        22, false,
-        3, 0,
-        0, 0));
-    g.SWERVE.Modules[3] = new SwerveModule(new SwerveModuleConstants(
-        "BL",
-        13, false,
-        23, false,
-        4, 0,
-        0, 0));
-
+        11, false,
+        21, true,
+        1, -0.2324,
+        -g.CHASSIS.WHEEL_BASE_X_m /2.0, 0.0));
+    if(g.SWERVE.Count == 4){        
+      g.SWERVE.Modules[3] = new SwerveModule(new SwerveModuleConstants(
+          "BL",
+          13, false,
+          23, false,
+          4, 0,
+          0, 0));
+    }
     for (int i = 0; i < g.SWERVE.Count; i++) {
       g.SWERVE.Positions[i] = new SwerveModulePosition();
     }
@@ -125,17 +127,26 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
   }
 
   public void setSwerveModules(SwerveModuleState[] _states, boolean _enableSteer, boolean _enableDrive) {
-    g.SWERVE.Modules[0].setDesiredState(_states[0], _enableSteer, _enableDrive);
-    g.SWERVE.Modules[1].setDesiredState(_states[1], _enableSteer, _enableDrive);
-    g.SWERVE.Modules[2].setDesiredState(_states[2], _enableSteer, _enableDrive);
-    g.SWERVE.Modules[3].setDesiredState(_states[3], _enableSteer, _enableDrive);
+    for (int i = 0; i < g.SWERVE.Count; i++) {
+      g.SWERVE.Modules[i].setDesiredState(_states[i], _enableSteer, _enableDrive);
+    }
   }
 
+
   public void fastStop() {
-    g.SWERVE.Modules[0].setDesiredState(new SwerveModuleState(0.0,new Rotation2d(Math.toRadians(45))), true, true); // FL
-    g.SWERVE.Modules[1].setDesiredState(new SwerveModuleState(0.0,new Rotation2d(Math.toRadians(-45))), true, true); // FR
-    g.SWERVE.Modules[2].setDesiredState(new SwerveModuleState(0.0,new Rotation2d(Math.toRadians(135))), true, true); // BR
-    g.SWERVE.Modules[3].setDesiredState(new SwerveModuleState(0.0,new Rotation2d(Math.toRadians(-135))), true, true); // BL
+    switch(g.SWERVE.Count){
+      case 3:
+        g.SWERVE.Modules[0].setDesiredState(new SwerveModuleState(0.0,new Rotation2d(Math.toRadians(45))), true, true); // FL
+        g.SWERVE.Modules[1].setDesiredState(new SwerveModuleState(0.0,new Rotation2d(Math.toRadians(-45))), true, true); // FR
+        g.SWERVE.Modules[2].setDesiredState(new SwerveModuleState(0.0,new Rotation2d(Math.toRadians(90))), true, true); // BR
+        break;
+      case 4:
+        g.SWERVE.Modules[0].setDesiredState(new SwerveModuleState(0.0,new Rotation2d(Math.toRadians(45))), true, true); // FL
+        g.SWERVE.Modules[1].setDesiredState(new SwerveModuleState(0.0,new Rotation2d(Math.toRadians(-45))), true, true); // FR
+        g.SWERVE.Modules[2].setDesiredState(new SwerveModuleState(0.0,new Rotation2d(Math.toRadians(135))), true, true); // BR
+        g.SWERVE.Modules[3].setDesiredState(new SwerveModuleState(0.0,new Rotation2d(Math.toRadians(-135))), true, true); // BL
+        break;
+    }
   }
 
   public void resetYaw() {
@@ -201,11 +212,12 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
       /* Run as fast as possible, our signals will control the timing */
       while (true) {
         /* Now update odometry */
-        g.SWERVE.Positions[0] = g.SWERVE.Modules[0].updatePosition();
-        g.SWERVE.Positions[1] = g.SWERVE.Modules[1].updatePosition();
-        g.SWERVE.Positions[2] = g.SWERVE.Modules[2].updatePosition();
-        g.SWERVE.Positions[3] = g.SWERVE.Modules[3].updatePosition();
-
+        for (int i = 0; i < g.SWERVE.Count; i++) {
+          g.SWERVE.Positions[0] = g.SWERVE.Modules[0].updatePosition();
+          g.SWERVE.Positions[1] = g.SWERVE.Modules[1].updatePosition();
+          g.SWERVE.Positions[2] = g.SWERVE.Modules[2].updatePosition();
+          g.SWERVE.Positions[3] = g.SWERVE.Modules[3].updatePosition();
+        }
         g.ROBOT.Pose = m_odometry.update(getRobotAngle(), g.SWERVE.Positions);
         m_field.setRobotPose(g.ROBOT.Pose);
         try {
