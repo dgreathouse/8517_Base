@@ -31,17 +31,17 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
   private PIDController m_turnPID = new PIDController(g.DRIVETRAIN.TURN_KP, g.DRIVETRAIN.TURN_KI, g.DRIVETRAIN.TURN_KD);
 
   /** Creates a new Drivetrain. */
+  
   public Drivetrain() {
-
     initialize();
   }
-
+  
   @SuppressWarnings("unused")
+  
   public void initialize() {
     // Define the IMU/Gyro called Pigeon2 that is on the CANIvore Bus network
     m_pigeon2 = new Pigeon2(g.CAN_IDS_CANIVORE.PIGEON2, g.CAN_IDS_CANIVORE.NAME);
     // Define the swerve module constants for each module.
-    // TODO: Change this if g.SWERVE.Count changes from 3 to 4.
     g.SWERVE.Modules[0] = new SwerveModule(new SwerveModuleConstants(
         "FL",
         12, false,
@@ -72,8 +72,8 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
       g.SWERVE.Positions[i] = new SwerveModulePosition();
     }
     updatePositions();
-    m_kinematics = new SwerveDriveKinematics(g.SWERVE.Modules[0].m_location, g.SWERVE.Modules[1].m_location,
-        g.SWERVE.Modules[2].m_location, g.SWERVE.Modules[3].m_location);
+    // TODO: Adjust Kinematics for the number of swerve modules
+    m_kinematics = new SwerveDriveKinematics(g.SWERVE.Modules[0].m_location, g.SWERVE.Modules[1].m_location, g.SWERVE.Modules[2].m_location);
     m_odometry = new SwerveDriveOdometry(m_kinematics, getRobotAngle(), g.SWERVE.Positions);
     m_field = new Field2d();
 
@@ -99,18 +99,32 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
   public void updateDashboard() {
 
   }
-
+  /**
+   * Drive in a robot centric mode
+   * @param _speeds The ChassisSpeeds contains the X,Y direction and robot rotational speed
+   */
   public void driveRobotCentric(ChassisSpeeds _speeds) {
     var swerveStates = m_kinematics.toSwerveModuleStates(_speeds);
     setSwerveModules(swerveStates, true, true);
   }
 
+   /**
+   * Drive in a field centric mode. The X,Y are changed to compensate for the Field orientation
+   * @param _speeds The ChassisSpeeds contains the X,Y direction and robot rotational speed
+   */
   public void driveFieldCentric(ChassisSpeeds _speeds) {
     var robotCentricSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(_speeds, getRobotAngle());
     var swerveStates = m_kinematics.toSwerveModuleStates(robotCentricSpeeds);
     setSwerveModules(swerveStates, true, true);
   }
-
+  /**
+   * Drive in a angle field centric mode. The X,Y are changed to compensate for the Field orientation.
+   * The rotational speed is changed to PID to the requested angle from g.ROBOT.AngleTarget_deg
+   * @param _xSpeeds The requested X speed in MPS
+   * @param _ySpeeds The requested Y speed in MPS
+   * @param _enableSteer enable the Steer motor
+   * @param _enableDrive enable the Drive motor
+   */
   public void driveAngleFieldCentric(double _xSpeed, double _ySpeed, boolean _enableSteer, boolean _enableDrive) {
     double rotationalSpeed = m_turnPID.calculate(getRobotAngle().getRadians(), Math.toRadians(g.ROBOT.AngleTarget_deg));
     rotationalSpeed = MathUtil.applyDeadband(rotationalSpeed, 0.01);
@@ -118,21 +132,25 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
     var swerveStates = m_kinematics.toSwerveModuleStates(robotCentricSpeeds);
     setSwerveModules(swerveStates, _enableSteer, _enableDrive);
   }
-
+  /**
+   * Drive in Polar Field Centric. This will drive at a specified angle, speed and maintain the robot
+   * heading based on g.ROBOT.AngleTarget_deg. This method is used in autonomous when we only want 
+   * to specify the speed and angle to drive at.
+   * @param _driveAngle_deg The angle to drive at
+   * @param _speed_mps The speed in MPS to drive at
+   * @param _enableSteer enable the Steer Motor
+   * @param _enableDrive enable the Drive Motor
+   */
   public void drivePolarFieldCentric(double _driveAngle_deg, double _speed_mps, boolean _enableSteer,
       boolean _enableDrive) {
     double y = Math.sin(Units.degreesToRadians(_driveAngle_deg)) * _speed_mps;
     double x = Math.cos(Units.degreesToRadians(_driveAngle_deg)) * _speed_mps;
     driveAngleFieldCentric(x, y, _enableSteer, _enableDrive);
   }
-
-  public void setSwerveModules(SwerveModuleState[] _states, boolean _enableSteer, boolean _enableDrive) {
-    for (int i = 0; i < g.SWERVE.Count; i++) {
-      g.SWERVE.Modules[i].setDesiredState(_states[i], _enableSteer, _enableDrive);
-    }
-  }
-
-
+  /**
+   * This is meant to cause the drive train to do a fast stop by changing the wheels to ~45 degrees. 
+   * This can be used to stop fast or prevent the robot from being pushed.
+   */
   public void fastStop() {
     switch(g.SWERVE.Count){
       case 3:
@@ -148,21 +166,55 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
         break;
     }
   }
+  
+  /**
+   * The only method that sets the Swerve Module states to drive the motors
+   * @param _states An array of module speeds and angles developed from the drive modes
+   * @param _enableSteer enable the Steer Motor
+   * @param _enableDrive enable the Drive Motor
+   */
+  public void setSwerveModules(SwerveModuleState[] _states, boolean _enableSteer, boolean _enableDrive) {
+    for (int i = 0; i < g.SWERVE.Count; i++) {
+      g.SWERVE.Modules[i].setDesiredState(_states[i], _enableSteer, _enableDrive);
+    }
+  }
 
+  /**
+   * Reset the GYRO/IMU to zero heading.
+   * 
+   */
   public void resetYaw() {
     m_pigeon2.setYaw(0.0);
   }
 
+  /**
+   * Set the current drive mode
+   * @param _driveMode The drive mode the default command should use
+   */
   public void setDriveMode(DriveMode _driveMode) {
     g.DRIVETRAIN.driveMode = _driveMode;
   }
+
+  /**
+   * Is the robot rotational on target for g.ROBOT.AngleTarget_deg
+   * @return if the rotation of the robot is on target
+   */
   public boolean isRotateAtTarget(){
     return m_turnPID.atSetpoint();
   }
+
+  /**
+   * Set the drive speed multiplier for the amount of voltage to apply to the drive motor.
+   * A value of 1.0 is max speed. A value of 0 will disable the drive motor.
+   * @param _val
+   */
   public void setDriveSpeedMultiplier(double _val) {
     g.DRIVETRAIN.driveSpeedMultiplier = _val;
   }
 
+  /**
+   * Use the drive controller Left X,Y to set 1 of 8 discrete robot target angles if the X and Y are greater than a preset value
+   */
   public void setAngleTarget() {
     double x = g.OI.driveController.getLeftX();
     double y = g.OI.driveController.getLeftY();
@@ -189,15 +241,19 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
     }
   }
 
+  /**
+   * Directly set the g.ROBOT.AngleTarget_deg to a angle. Generally this is used in autonomous or by a button.
+   * @param _angle_deg The target angle the robot should PID to in AngleFieldCentric Mode.
+   */
   public void setAngleTarget(double _angle_deg) {
     g.ROBOT.AngleTarget_deg = _angle_deg;
   }
-
+  // This method will be called once per scheduler run
   @Override
   public void periodic() {
     g.ROBOT.AngleActual_deg = getRobotAngle().getDegrees();
     setAngleTarget();
-    // This method will be called once per scheduler run
+    
   }
 
   /* Perform swerve module updates in a separate thread to minimize latency */
@@ -213,10 +269,7 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
       while (true) {
         /* Now update odometry */
         for (int i = 0; i < g.SWERVE.Count; i++) {
-          g.SWERVE.Positions[0] = g.SWERVE.Modules[0].updatePosition();
-          g.SWERVE.Positions[1] = g.SWERVE.Modules[1].updatePosition();
-          g.SWERVE.Positions[2] = g.SWERVE.Modules[2].updatePosition();
-          g.SWERVE.Positions[3] = g.SWERVE.Modules[3].updatePosition();
+          g.SWERVE.Positions[i] = g.SWERVE.Modules[i].updatePosition();
         }
         g.ROBOT.Pose = m_odometry.update(getRobotAngle(), g.SWERVE.Positions);
         m_field.setRobotPose(g.ROBOT.Pose);

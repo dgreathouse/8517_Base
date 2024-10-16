@@ -4,8 +4,6 @@
 
 package frc.robot.subsystems;
 
-import java.sql.Driver;
-
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
@@ -123,9 +121,7 @@ public class SwerveModule {
         /* ------------------------------------- Drive --------------------------------------------------- */
         if (_enableDrive) {
             double driveSetVelocity_mps = optimized.speedMetersPerSecond * g.DRIVETRAIN.driveSpeedMultiplier;
-            double driveVolts = m_drivePID.calculate(
-                    m_driveMotor.getVelocity().getValueAsDouble() / g.SWERVE.MODULE.DRIVE.WHEEL_MotRotPerMeter,
-                    driveSetVelocity_mps);
+            double driveVolts = m_drivePID.calculate(m_driveMotor.getVelocity().getValueAsDouble() / g.SWERVE.MODULE.DRIVE.WHEEL_MotRotPerMeter, driveSetVelocity_mps);
             driveVolts = MathUtil.clamp(driveVolts, -6, 6);
             driveVolts = driveVolts + m_driveFF.calculate(driveSetVelocity_mps);
 
