@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -23,6 +24,7 @@ public class g {
     public static class CAN_IDS_CANIVORE {
         public static final String NAME = "CANivore";
         public static final int PIGEON2 = 5;
+        public static final double UPDATE_FREQ_HZ = 250;
     }
 
     public static class CV {
@@ -34,6 +36,7 @@ public class g {
     public static class ROBOT {
         public static volatile double AngleActual_deg = 0;
         public static volatile double AngleTarget_deg = 0;
+        public static volatile Rotation2d RobotActualAngle = new Rotation2d();
         public static final double PERIOD = 0.02;
         public static final double BATTERY_MAX_VOLTS = 12.8;
         public static final int PD_CANID = 1; // Power Distribution, Rev or CTRE

@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.Pigeon2;
 
 import edu.wpi.first.math.MathUtil;
@@ -28,8 +30,10 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
   SwerveDriveOdometry m_odometry;
   Field2d m_field;
   OdometryThread m_odometryThread;
+  StatusSignal<Double> m_yaw;
+  StatusSignal<Double> m_angularVelocityZ;
+  
   private PIDController m_turnPID = new PIDController(g.DRIVETRAIN.TURN_KP, g.DRIVETRAIN.TURN_KI, g.DRIVETRAIN.TURN_KD);
-
   /** Creates a new Drivetrain. */
   
   public Drivetrain() {
@@ -41,6 +45,11 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
   public void initialize() {
     // Define the IMU/Gyro called Pigeon2 that is on the CANIvore Bus network
     m_pigeon2 = new Pigeon2(g.CAN_IDS_CANIVORE.PIGEON2, g.CAN_IDS_CANIVORE.NAME);
+    m_yaw = m_pigeon2.getYaw();
+    m_yaw.setUpdateFrequency(g.CAN_IDS_CANIVORE.UPDATE_FREQ_HZ);
+    m_angularVelocityZ = m_pigeon2.getAngularVelocityZDevice();
+    m_angularVelocityZ.setUpdateFrequency(g.CAN_IDS_CANIVORE.UPDATE_FREQ_HZ);
+    
     // Define the swerve module constants for each module.
     g.SWERVE.Modules[0] = new SwerveModule(new SwerveModuleConstants(
         "FL",
@@ -74,11 +83,14 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
     updatePositions();
     // TODO: Adjust Kinematics for the number of swerve modules
     m_kinematics = new SwerveDriveKinematics(g.SWERVE.Modules[0].m_location, g.SWERVE.Modules[1].m_location, g.SWERVE.Modules[2].m_location);
-    m_odometry = new SwerveDriveOdometry(m_kinematics, getRobotAngle(), g.SWERVE.Positions);
+    m_odometry = new SwerveDriveOdometry(m_kinematics, g.ROBOT.RobotActualAngle, g.SWERVE.Positions);
     m_field = new Field2d();
 
     m_turnPID.enableContinuousInput(-Math.PI, Math.PI);
     m_turnPID.setTolerance(Math.toRadians(.1), 1);
+
+    // Setup StatusSignals
+    
 
     m_odometryThread = new OdometryThread();
     m_odometryThread.start();
@@ -92,9 +104,7 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
     }
   }
 
-  public Rotation2d getRobotAngle() {
-    return m_pigeon2.getRotation2d();
-  }
+
 
   public void updateDashboard() {
 
@@ -113,7 +123,7 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
    * @param _speeds The ChassisSpeeds contains the X,Y direction and robot rotational speed
    */
   public void driveFieldCentric(ChassisSpeeds _speeds) {
-    var robotCentricSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(_speeds, getRobotAngle());
+    var robotCentricSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(_speeds, g.ROBOT.RobotActualAngle);
     var swerveStates = m_kinematics.toSwerveModuleStates(robotCentricSpeeds);
     setSwerveModules(swerveStates, true, true);
   }
@@ -126,9 +136,9 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
    * @param _enableDrive enable the Drive motor
    */
   public void driveAngleFieldCentric(double _xSpeed, double _ySpeed, boolean _enableSteer, boolean _enableDrive) {
-    double rotationalSpeed = m_turnPID.calculate(getRobotAngle().getRadians(), Math.toRadians(g.ROBOT.AngleTarget_deg));
+    double rotationalSpeed = m_turnPID.calculate(g.ROBOT.RobotActualAngle.getRadians(), Math.toRadians(g.ROBOT.AngleTarget_deg));
     rotationalSpeed = MathUtil.applyDeadband(rotationalSpeed, 0.01);
-    var robotCentricSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(_xSpeed, _ySpeed, rotationalSpeed, getRobotAngle());
+    var robotCentricSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(_xSpeed, _ySpeed, rotationalSpeed, g.ROBOT.RobotActualAngle);
     var swerveStates = m_kinematics.toSwerveModuleStates(robotCentricSpeeds);
     setSwerveModules(swerveStates, _enableSteer, _enableDrive);
   }
@@ -248,10 +258,12 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
   public void setAngleTarget(double _angle_deg) {
     g.ROBOT.AngleTarget_deg = _angle_deg;
   }
+  private Rotation2d getRobotAngle() {
+    return new Rotation2d(g.ROBOT.AngleActual_deg);
+  }
   // This method will be called once per scheduler run
   @Override
   public void periodic() {
-    g.ROBOT.AngleActual_deg = getRobotAngle().getDegrees();
     setAngleTarget();
     
   }
@@ -264,14 +276,23 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
 
     @Override
     public void run() {
-
-      /* Run as fast as possible, our signals will control the timing */
+       /* If using the CANIvore the signals should be set to update at a fast rate.
+       * Each swerve module signal and the Pigeon are set to update at ~250Hz = 4ms
+       * The Robot actual angle is Latency Compensated.
+       * There is no blocking in this approach or waiting for all signals. 
+       * There may be a sync issue but when it comes to distances traveled it is less than an inch.
+       * Since the Yaw is Latenceny compensated the only issue left is Yaw vs Swerve positions or Pose
+       * Pose is updated at the same rate in this thread at the same rate as the updated signals.
+       * 
+       */
       while (true) {
         /* Now update odometry */
         for (int i = 0; i < g.SWERVE.Count; i++) {
           g.SWERVE.Positions[i] = g.SWERVE.Modules[i].updatePosition();
         }
-        g.ROBOT.Pose = m_odometry.update(getRobotAngle(), g.SWERVE.Positions);
+        g.ROBOT.AngleActual_deg = StatusSignal.getLatencyCompensatedValue(m_yaw, m_angularVelocityZ);
+        g.ROBOT.RobotActualAngle = getRobotAngle();
+        g.ROBOT.Pose = m_odometry.update(g.ROBOT.RobotActualAngle, g.SWERVE.Positions);
         m_field.setRobotPose(g.ROBOT.Pose);
         try {
           Thread.sleep(5);

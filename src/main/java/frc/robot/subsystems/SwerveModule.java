@@ -5,6 +5,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.OpenLoopRampsConfigs;
@@ -38,7 +39,10 @@ public class SwerveModule {
     private SimpleMotorFeedforward m_driveFF = new SimpleMotorFeedforward(g.SWERVE.MODULE.DRIVE.PID_ks, g.SWERVE.MODULE.DRIVE.PID_kv);
     private VoltageOut m_steerVoltageOut = new VoltageOut(0.0);
     private VoltageOut m_driveVoltageOut = new VoltageOut(0.0);
-
+    private StatusSignal<Double> m_drivePosition;
+    private StatusSignal<Double> m_driveVelocity;
+    private StatusSignal<Double> m_steerPosition;
+    private StatusSignal<Double> m_steerVelocity;
     public SwerveModule(SwerveModuleConstants _k) {
         StatusCode status;
         m_k = _k;
@@ -68,6 +72,10 @@ public class SwerveModule {
         status = m_driveMotor.getConfigurator().apply(driveCurrentConfig);
         System.out.println(m_k.NAME + " Drive Motor Current Config Status =" + status.toString());
 
+        m_drivePosition = m_driveMotor.getPosition();
+        m_drivePosition.setUpdateFrequency(g.CAN_IDS_CANIVORE.UPDATE_FREQ_HZ);
+        m_driveVelocity = m_driveMotor.getVelocity();
+        m_driveVelocity.setUpdateFrequency(g.CAN_IDS_CANIVORE.UPDATE_FREQ_HZ);
         // Configure Steer Motor
         m_steerPID.enableContinuousInput(-180.0, 180);
         TalonFXConfiguration steerConfigs = new TalonFXConfiguration();
@@ -87,6 +95,12 @@ public class SwerveModule {
         System.out.println(m_k.NAME + " m_canCoder Config Status =" + status.toString());
         // Set the offset position of the steer motor based on the CANCoder
         m_steerMotor.setPosition(m_canCoder.getPosition().getValueAsDouble() * g.SWERVE.MODULE.STEER.GEAR_RATIO);
+
+        m_steerPosition = m_steerMotor.getPosition();
+        m_steerPosition.setUpdateFrequency(g.CAN_IDS_CANIVORE.UPDATE_FREQ_HZ);
+        m_steerVelocity = m_steerMotor.getVelocity();
+        m_steerVelocity.setUpdateFrequency(g.CAN_IDS_CANIVORE.UPDATE_FREQ_HZ);
+
     }
 
     public SwerveModulePosition updatePosition() {
