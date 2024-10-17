@@ -6,7 +6,6 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.RobotContainer;
 import frc.robot.lib.DriveMode;
 import frc.robot.lib.g;
 import frc.robot.subsystems.Drivetrain;
@@ -25,7 +24,7 @@ public class AutoDriveTimeVelCommand extends Command {
   double m_driveAngleAdjusted = m_driveAngle;
   /** Creates a new AutoDriveTimeVelCommand. */
   public AutoDriveTimeVelCommand(double _speed_mps, double _driveAngle, double _robotAngle, double _timeOut_sec, double _rampUpTime_sec, double _rampDownTime_sec) {
-    m_drive = RobotContainer.m_drivetrain;
+    m_drive = g.ROBOT.Drive;
     m_timeOut_sec = _timeOut_sec;
     m_driveAngle = _driveAngle;
     m_robotAngle = _robotAngle;

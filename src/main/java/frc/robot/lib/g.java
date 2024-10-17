@@ -12,6 +12,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.SwerveModule;
 
 /** Add your docs here. */
@@ -41,6 +42,7 @@ public class g {
         public static final double BATTERY_MAX_VOLTS = 12.8;
         public static final int PD_CANID = 1; // Power Distribution, Rev or CTRE
         public static Pose2d Pose = new Pose2d();
+        public static final Drivetrain Drive = new Drivetrain();
 
     }
     public static class DASHBOARD{

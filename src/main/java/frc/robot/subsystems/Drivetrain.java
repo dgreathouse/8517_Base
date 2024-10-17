@@ -40,8 +40,7 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
   }
   
   @SuppressWarnings("unused")
-  
-  public void initialize() {
+    public void initialize() {
     // Define the IMU/Gyro called Pigeon2 that is on the CANIvore Bus network
     m_pigeon2 = new Pigeon2(g.CAN_IDS_CANIVORE.PIGEON2, g.CAN_IDS_CANIVORE.NAME);
     m_yaw = m_pigeon2.getYaw();
@@ -105,9 +104,6 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
 
 
 
-  public void updateDashboard() {
-
-  }
   /**
    * Drive in a robot centric mode
    * @param _speeds The ChassisSpeeds contains the X,Y direction and robot rotational speed
@@ -300,5 +296,11 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
         }
       }
     }
+  }
+    /**
+   * Called by separate thread to put stuff to the dashboard at a slower rate than the main periodic
+   */
+  public void updateDashboard() {
+    
   }
 }

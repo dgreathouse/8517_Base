@@ -23,11 +23,12 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import frc.robot.lib.IUpdateDashboard;
 import frc.robot.lib.SwerveModuleConstants;
 import frc.robot.lib.g;
 
 /** Add your docs here. */
-public class SwerveModule {
+public class SwerveModule implements IUpdateDashboard{
     SwerveModuleConstants m_k;
     public Translation2d m_location;
     private TalonFX m_driveMotor;
@@ -144,4 +145,11 @@ public class SwerveModule {
             m_driveMotor.setControl(m_driveVoltageOut.withOutput(0).withEnableFOC(true));
         }
     }
+
+  /**
+   * Called by separate thread to put stuff to the dashboard at a slower rate than the main periodic
+   */
+  public void updateDashboard() {
+    
+  }
 }

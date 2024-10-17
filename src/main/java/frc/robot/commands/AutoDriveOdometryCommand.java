@@ -9,7 +9,6 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.RobotContainer;
 import frc.robot.lib.DriveMode;
 import frc.robot.lib.g;
 import frc.robot.subsystems.Drivetrain;
@@ -37,7 +36,7 @@ public class AutoDriveOdometryCommand extends Command {
    * @param _speed The speed in MPS to drive at.
    */
   public AutoDriveOdometryCommand(Pose2d _pose, double _speed) {
-    m_drive = RobotContainer.m_drivetrain;
+    m_drive = g.ROBOT.Drive;
     m_poseDesired = _pose;
     m_driveSpeed = _speed;
     addRequirements(m_drive);// here to declare subsystem dependencies.
