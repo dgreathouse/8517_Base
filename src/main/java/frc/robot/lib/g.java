@@ -80,10 +80,10 @@ public class g {
                 public static double PID_ki = 0.0;
                 public static double PID_kv = 2.8256;
                 public static double PID_ks = 0.0;
-                private static final double MOTOR_PINION_TEETH = 11.0;
-                private static final double GEAR_1_TEETH = 34.0;
-                private static final double GEAR_2_DRIVE_TEETH = 26.0;
-                private static final double GEAR_2_DRIVEN_TEETH = 20.0;
+                private static final double MOTOR_PINION_TEETH = 12.0;
+                private static final double GEAR_1_TEETH = 32.0;
+                private static final double GEAR_2_DRIVE_TEETH = 28.0;
+                private static final double GEAR_2_DRIVEN_TEETH = 18.0;
                 private static final double GEAR_BEVEL_DRIVE_TEETH = 15.0;
                 private static final double GEAR_BEVEL_DRIVEN_TEETH = 45.0;
                 public static final double GEAR_RATIO = (GEAR_1_TEETH / MOTOR_PINION_TEETH)
@@ -92,7 +92,7 @@ public class g {
                 public static final double WHEEL_DIAMETER_m = .1015; // .10287
                 private static final double WHEEL_CIRCUMFERENCE_m = Math.PI * WHEEL_DIAMETER_m;
                 public static final double WHEEL_MotRotPerMeter = GEAR_RATIO / WHEEL_CIRCUMFERENCE_m;
-                private static final double MOTOR_MAX_VELOCITY_RotPerMin = 6080.0;
+                private static final double MOTOR_MAX_VELOCITY_RotPerMin = 5800.0;
                 private static final double MOTOR_MAX_VELOCITY_RotPerSec = MOTOR_MAX_VELOCITY_RotPerMin / 60.0;
                 private static final double WHEEL_MAX_VELOCITY_RotPerSec = MOTOR_MAX_VELOCITY_RotPerSec / GEAR_RATIO;
                 private static final double MOTOR_PEAK_EFFICIENCY_percent = 100;
