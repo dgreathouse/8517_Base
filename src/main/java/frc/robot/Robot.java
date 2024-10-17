@@ -22,6 +22,10 @@ public class Robot extends TimedRobot {
 
   public Robot(){
     super(0.01); // Set the loop rate. Typical is 0.02 or 20ms. We are trying 10ms.
+    LiveWindow.disableAllTelemetry();
+    // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
+    // autonomous chooser on the dashboard.
+    m_robotContainer = new RobotContainer();
   }
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -29,10 +33,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    LiveWindow.disableAllTelemetry();
-    // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
-    // autonomous chooser on the dashboard.
-    m_robotContainer = new RobotContainer();
+
   }
 
   /**

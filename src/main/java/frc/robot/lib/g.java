@@ -10,6 +10,9 @@ import java.util.Set;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.Drivetrain;
@@ -43,10 +46,12 @@ public class g {
         public static final int PD_CANID = 1; // Power Distribution, Rev or CTRE
         public static Pose2d Pose = new Pose2d();
         public static final Drivetrain Drive = new Drivetrain();
+        public static PowerDistribution Power = new PowerDistribution();
 
     }
     public static class DASHBOARD{
         public static Set<IUpdateDashboard> updates = new HashSet<>();
+        public static ShuffleboardTab ShuffleBoardTab_Match = Shuffleboard.getTab("Match");
     }
     public static class OI {
         // Driver controller

@@ -1,10 +1,8 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.Notifier;
-import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -19,8 +17,6 @@ public class RobotContainer {
   
   private final DrivetrainDefaultCommand m_drivetrainDefaultCommand = new DrivetrainDefaultCommand(g.ROBOT.Drive);
   private SendableChooser<Command> autoChooser = new SendableChooser<>();
-  public static ShuffleboardTab matchTab = Shuffleboard.getTab("Match");
-  public static PowerDistribution m_pd = new PowerDistribution();
   private Notifier m_telemetry;
   
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -33,15 +29,14 @@ public class RobotContainer {
     m_telemetry.startPeriodic(0.1);
 
     configShuffleBoard();
-    
   }
+  
   private void updateDashboard(){
     while (g.DASHBOARD.updates.iterator().hasNext()) {
       g.DASHBOARD.updates.iterator().next().updateDashboard();
     }
   }
-  /**
-   */
+
   private void configureBindings() {
     g.OI.DRIVER_RESET_YAW.onTrue(new InstantCommand(g.ROBOT.Drive::resetYaw, g.ROBOT.Drive));
     
@@ -54,16 +49,15 @@ public class RobotContainer {
     g.OI.DRIVER_DRIVE_MODE_SPEED_HI.onTrue(new InstantCommand(() -> g.ROBOT.Drive.setDriveSpeedMultiplier(0.5)));
 
   }
+
   private void configShuffleBoard(){
     Shuffleboard.selectTab("Match");
-    matchTab.add("Autonomous Play",autoChooser).withPosition(5,0).withSize(3, 2);
-    matchTab.add("Drive State",g.DRIVETRAIN.driveMode.toString()).withPosition(14, 0).withSize(3,2);
-    matchTab.add("Battery Volts", m_pd.getVoltage()).withPosition(5, 2).withSize(12,3).withWidget(BuiltInWidgets.kGraph);
+    g.DASHBOARD.ShuffleBoardTab_Match.add("Autonomous Play",autoChooser).withPosition(5,0).withSize(3, 2);
+    g.DASHBOARD.ShuffleBoardTab_Match.add("Drive State",g.DRIVETRAIN.driveMode.toString()).withPosition(14, 0).withSize(3,2);
+    g.DASHBOARD.ShuffleBoardTab_Match.add("Battery Volts", g.ROBOT.Power.getVoltage()).withPosition(5, 2).withSize(12,3).withWidget(BuiltInWidgets.kGraph);
   }
-  /**
-   */
+
   public Command getAutonomousCommand() {
-    // An example command will be run in autonomous
     return autoChooser.getSelected();
   }
 }
