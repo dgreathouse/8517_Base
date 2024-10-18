@@ -4,10 +4,19 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import frc.robot.autoCommandGroups.AutoDoNothing;
+import frc.robot.commands.DrivetrainDefaultCommand;
+import frc.robot.lib.DriveMode;
+import frc.robot.lib.g;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -17,15 +26,28 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
  */
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
+  /* -------- Old RobotContainer Stuff (Begin)------------- */
+  private DrivetrainDefaultCommand m_drivetrainDefaultCommand = new DrivetrainDefaultCommand(g.ROBOT.Drive);
+  private SendableChooser<Command> autoChooser = new SendableChooser<>();
+  private Notifier m_telemetry;
+  /* -------- Old RobotContainer Stuff (Begin)------------- */
 
-  private RobotContainer m_robotContainer;
 
   public Robot(){
-    super(0.01); // Set the loop rate. Typical is 0.02 or 20ms. We are trying 10ms.
+    super(g.ROBOT.LOOP_RATE_SEC); // Set the loop rate. Typical is 0.02 or 20ms. We are trying 10ms.
     LiveWindow.disableAllTelemetry();
-    // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
-    // autonomous chooser on the dashboard.
-    m_robotContainer = new RobotContainer();
+    /* -------- Old RobotContainer Stuff (Begin)------------- */
+    g.ROBOT.Drive.setDefaultCommand(m_drivetrainDefaultCommand);
+
+    configureBindings();
+
+    autoChooser.setDefaultOption("Do Nothing", new AutoDoNothing());
+
+    m_telemetry = new Notifier(this::updateDashboard);
+    m_telemetry.startPeriodic(0.1);
+
+    configShuffleBoard();
+    /* -------- Old RobotContainer Stuff (End)------------- */
   }
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -37,7 +59,7 @@ public class Robot extends TimedRobot {
   }
 
   /**
-   * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
+   * This function is called every {@link g.ROBOT.LOOP_RATE_SEC}, no matter the mode. Use this for items like diagnostics
    * that you want ran during disabled, autonomous, teleoperated and test.
    *
    * <p>This runs after the mode specific periodic functions, but before LiveWindow and
@@ -62,7 +84,7 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    m_autonomousCommand = getAutonomousCommand();
 
     // schedule the autonomous command 
     if (m_autonomousCommand != null) {
@@ -106,4 +128,34 @@ public class Robot extends TimedRobot {
   /** This function is called periodically whilst in simulation. */
   @Override
   public void simulationPeriodic() {}
+  /* -------- Old RobotContainer Stuff (Begin)------------- */
+  private void updateDashboard(){
+    while (g.DASHBOARD.updates.iterator().hasNext()) {
+      g.DASHBOARD.updates.iterator().next().updateDashboard();
+    }
+  }
+
+  private void configureBindings() {
+    g.OI.DRIVER_RESET_YAW.onTrue(new InstantCommand(g.ROBOT.Drive::resetYaw, g.ROBOT.Drive));
+    
+    g.OI.DRIVER_DRIVE_MODE_ANGLEFIELDCENTRIC.onTrue(new InstantCommand(() -> g.ROBOT.Drive.setDriveMode(DriveMode.ANGLE_FIELD_CENTRIC), g.ROBOT.Drive));
+    g.OI.DRIVER_DRIVE_MODE_FIELDCENTRIC.onTrue(new InstantCommand(() -> g.ROBOT.Drive.setDriveMode(DriveMode.FIELD_CENTRIC), g.ROBOT.Drive));
+    g.OI.DRIVER_DRIVE_MODE_ROBOTCENTRIC.onTrue(new InstantCommand(() -> g.ROBOT.Drive.setDriveMode(DriveMode.ROBOT_CENTRIC), g.ROBOT.Drive));
+    g.OI.DRIVER_DRIVE_MODE_ROTATEFIELDCENTRIC.onTrue(new InstantCommand(() -> g.ROBOT.Drive.setDriveMode(DriveMode.ROTATE_FIELD_CENTRIC), g.ROBOT.Drive));
+
+    g.OI.DRIVER_DRIVE_MODE_SPEED_HI.onTrue(new InstantCommand(() -> g.ROBOT.Drive.setDriveSpeedMultiplier(1.0)));
+    g.OI.DRIVER_DRIVE_MODE_SPEED_HI.onTrue(new InstantCommand(() -> g.ROBOT.Drive.setDriveSpeedMultiplier(0.5)));
+
+  }
+
+  private void configShuffleBoard(){
+    Shuffleboard.selectTab("Match");
+    g.DASHBOARD.ShuffleBoardTab_Match.add("Autonomous Play",autoChooser).withPosition(5,0).withSize(3, 2);
+    g.DASHBOARD.ShuffleBoardTab_Match.add("Drive State",g.DRIVETRAIN.driveMode.toString()).withPosition(14, 0).withSize(3,2);
+    g.DASHBOARD.ShuffleBoardTab_Match.add("Battery Volts", g.ROBOT.Power.getVoltage()).withPosition(5, 2).withSize(12,3).withWidget(BuiltInWidgets.kGraph);
+  }
+  public Command getAutonomousCommand() {
+    return autoChooser.getSelected();
+  }
+  /* -------- Old RobotContainer Stuff (End)------------- */
 }

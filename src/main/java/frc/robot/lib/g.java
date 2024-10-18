@@ -38,6 +38,7 @@ public class g {
     }
 
     public static class ROBOT {
+        public static final double LOOP_RATE_SEC = 0.01;
         public static volatile double AngleActual_deg = 0;
         public static volatile double AngleTarget_deg = 0;
         public static volatile Rotation2d RobotActualAngle = new Rotation2d();
