@@ -34,7 +34,7 @@ public class SwerveModule implements IUpdateDashboard{
     private TalonFX m_driveMotor;
     private TalonFX m_steerMotor;
     private CANcoder m_canCoder;
-    private SwerveModulePosition m_position;
+    private SwerveModulePosition m_position = new SwerveModulePosition();
     private PIDController m_steerPID = new PIDController(g.SWERVE.MODULE.STEER.PID_kp, g.SWERVE.MODULE.STEER.PID_ki, 0);
     private PIDController m_drivePID = new PIDController(g.SWERVE.MODULE.DRIVE.PID_kp, g.SWERVE.MODULE.DRIVE.PID_ki, 0);
     private SimpleMotorFeedforward m_driveFF = new SimpleMotorFeedforward(g.SWERVE.MODULE.DRIVE.PID_ks, g.SWERVE.MODULE.DRIVE.PID_kv);
@@ -48,9 +48,9 @@ public class SwerveModule implements IUpdateDashboard{
         StatusCode status;
         m_k = _k;
         m_location = new Translation2d(m_k.LOCATION_X_METER, m_k.LOCATION_Y_METER);
-        m_driveMotor = new TalonFX(m_k.DRIVE_CAN_ID, g.CAN_IDS_ROBORIO.NAME);
-        m_steerMotor = new TalonFX(m_k.STEER_CAN_ID, g.CAN_IDS_ROBORIO.NAME);
-        m_canCoder = new CANcoder(m_k.CANCODER_ID, g.CAN_IDS_ROBORIO.NAME);
+        m_driveMotor = new TalonFX(m_k.DRIVE_CAN_ID, g.CAN_IDS_CANIVORE.NAME);
+        m_steerMotor = new TalonFX(m_k.STEER_CAN_ID, g.CAN_IDS_CANIVORE.NAME);
+        m_canCoder = new CANcoder(m_k.CANCODER_ID, g.CAN_IDS_CANIVORE.NAME);
 
         // Configure Drive Motor
         TalonFXConfiguration driveConfigs = new TalonFXConfiguration();
@@ -78,7 +78,7 @@ public class SwerveModule implements IUpdateDashboard{
         m_driveVelocity = m_driveMotor.getVelocity();
         m_driveVelocity.setUpdateFrequency(g.CAN_IDS_CANIVORE.UPDATE_FREQ_HZ);
         // Configure Steer Motor
-        m_steerPID.enableContinuousInput(-180.0, 180);
+        m_steerPID.enableContinuousInput(-180.0, 180.0);
         TalonFXConfiguration steerConfigs = new TalonFXConfiguration();
         steerConfigs.MotorOutput.Inverted = m_k.STEER_IS_REVERSED ? InvertedValue.Clockwise_Positive
                 : InvertedValue.CounterClockwise_Positive;
@@ -145,7 +145,9 @@ public class SwerveModule implements IUpdateDashboard{
             m_driveMotor.setControl(m_driveVoltageOut.withOutput(0).withEnableFOC(true));
         }
     }
-
+    public double getDriveCurrent(){
+        return m_driveMotor.getTorqueCurrent().getValueAsDouble();
+    }
   /**
    * Called by separate thread to put stuff to the dashboard at a slower rate than the main periodic
    */

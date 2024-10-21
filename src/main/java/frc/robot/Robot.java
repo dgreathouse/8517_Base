@@ -149,10 +149,13 @@ public class Robot extends TimedRobot {
   }
 
   private void configShuffleBoard(){
+    
+
     Shuffleboard.selectTab("Match");
     g.DASHBOARD.ShuffleBoardTab_Match.add("Autonomous Play",autoChooser).withPosition(5,0).withSize(3, 2);
     g.DASHBOARD.ShuffleBoardTab_Match.add("Drive State",g.DRIVETRAIN.driveMode.toString()).withPosition(14, 0).withSize(3,2);
     g.DASHBOARD.ShuffleBoardTab_Match.add("Battery Volts", g.ROBOT.Power.getVoltage()).withPosition(5, 2).withSize(12,3).withWidget(BuiltInWidgets.kGraph);
+
   }
   public Command getAutonomousCommand() {
     return autoChooser.getSelected();

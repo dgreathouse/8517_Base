@@ -53,6 +53,8 @@ public class g {
     public static class DASHBOARD{
         public static Set<IUpdateDashboard> updates = new HashSet<>();
         public static ShuffleboardTab ShuffleBoardTab_Match = Shuffleboard.getTab("Match");
+        public static ShuffleboardTab ShuffleBoardTab_Drivetrain = Shuffleboard.getTab("Drivetrain");
+        public static ShuffleboardTab ShuffleBoardTab_Robot = Shuffleboard.getTab("Robot");
     }
     public static class OI {
         // Driver controller
@@ -79,6 +81,7 @@ public class g {
         public static final int Count = 3;
         public static SwerveModule[] Modules = new SwerveModule[Count];
         public static volatile SwerveModulePosition[] Positions = new SwerveModulePosition[Count];
+        public static volatile double DriveTotalCurrent = 0;
         //public static SwerveModuleConstants[] Constants = new SwerveModuleConstants[Count];
 
         public static class MODULE {

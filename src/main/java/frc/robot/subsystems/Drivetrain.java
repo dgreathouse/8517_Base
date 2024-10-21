@@ -16,6 +16,9 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.lib.DriveMode;
@@ -85,10 +88,7 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
     m_field = new Field2d();
 
     m_turnPID.enableContinuousInput(-Math.PI, Math.PI);
-    m_turnPID.setTolerance(Math.toRadians(.1), 1);
-
-    // Setup StatusSignals
-    
+    m_turnPID.setTolerance(Math.toRadians(.1), 1);    
 
     m_odometryThread = new OdometryThread();
     m_odometryThread.start();
@@ -288,7 +288,7 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
         g.ROBOT.AngleActual_deg = StatusSignal.getLatencyCompensatedValue(m_yaw, m_angularVelocityZ);
         g.ROBOT.RobotActualAngle = getRobotAngle();
         g.ROBOT.Pose = m_odometry.update(g.ROBOT.RobotActualAngle, g.SWERVE.Positions);
-        m_field.setRobotPose(g.ROBOT.Pose);
+        
         try {
           Thread.sleep(5);
         } catch (InterruptedException e) {
@@ -301,6 +301,18 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
    * Called by separate thread to put stuff to the dashboard at a slower rate than the main periodic
    */
   public void updateDashboard() {
-    
+
+    m_field.setRobotPose(g.ROBOT.Pose);
+    double current = 0; 
+    for(int i = 0; i < g.SWERVE.Count; i++){
+      current += g.SWERVE.Modules[i].getDriveCurrent();
+    }
+    g.SWERVE.DriveTotalCurrent = current;
+    // Drivetrain tab configure
+    // g.DASHBOARD.ShuffleBoardTab_Drivetrain.add("Drive Current (Amps)", current).withPosition(5, 0).withSize(3, 2).withWidget(BuiltInWidgets.kGraph);
+
+    // g.DASHBOARD.ShuffleBoardTab_Drivetrain.add("Robot Angle (Deg)", g.ROBOT.Pose.getRotation()).withPosition(5, 0).withSize(10, 10).withWidget(BuiltInWidgets.kGyro);
+    // g.DASHBOARD.ShuffleBoardTab_Drivetrain.add("Robot Pose X (M)", g.ROBOT.Pose.getX()).withPosition(5, 4).withSize(3, 2).withWidget(BuiltInWidgets.kTextView);
+    // g.DASHBOARD.ShuffleBoardTab_Drivetrain.add("Robot Pose X (M)", g.ROBOT.Pose.getX()).withPosition(5, 4).withSize(3, 2).withWidget(BuiltInWidgets.kTextView);
   }
 }
