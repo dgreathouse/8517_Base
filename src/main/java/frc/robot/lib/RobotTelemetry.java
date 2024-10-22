@@ -4,7 +4,10 @@
 
 package frc.robot.lib;
 
-/** Add your docs here. */
+
+/** Defines all telemetry to the shuffleboard in one place. 
+ * Shuffleboard grid must be set to 64 for this to align correctly
+*/
 public class RobotTelemetry {
 /* 
 Kinematics

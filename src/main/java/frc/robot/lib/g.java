@@ -11,8 +11,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.Drivetrain;
@@ -35,6 +34,8 @@ public class g {
         public static final double DEGREES_TO_RADIANS = 0.017453292519943295;
         public static final double RADIANS_TO_DEGREES = 57.29577951308232;
         public static final double INCHES_TO_METERS = 0.0254;
+        public static final double MPS_TO_FEETPERSEC = 3.28084;
+
     }
 
     public static class ROBOT {
@@ -48,13 +49,11 @@ public class g {
         public static Pose2d Pose = new Pose2d();
         public static final Drivetrain Drive = new Drivetrain();
         public static PowerDistribution Power = new PowerDistribution();
-
+        public static volatile Field2d Field = new Field2d();
     }
     public static class DASHBOARD{
         public static Set<IUpdateDashboard> updates = new HashSet<>();
-        public static ShuffleboardTab ShuffleBoardTab_Match = Shuffleboard.getTab("Match");
-        public static ShuffleboardTab ShuffleBoardTab_Drivetrain = Shuffleboard.getTab("Drivetrain");
-        public static ShuffleboardTab ShuffleBoardTab_Robot = Shuffleboard.getTab("Robot");
+
     }
     public static class OI {
         // Driver controller

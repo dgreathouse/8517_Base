@@ -7,9 +7,8 @@ package frc.robot;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -42,11 +41,11 @@ public class Robot extends TimedRobot {
     configureBindings();
 
     autoChooser.setDefaultOption("Do Nothing", new AutoDoNothing());
-
+    SmartDashboard.putData(autoChooser);
+    
     m_telemetry = new Notifier(this::updateDashboard);
     m_telemetry.startPeriodic(0.1);
 
-    configShuffleBoard();
     /* -------- Old RobotContainer Stuff (End)------------- */
   }
   /**
@@ -148,15 +147,6 @@ public class Robot extends TimedRobot {
 
   }
 
-  private void configShuffleBoard(){
-    
-
-    Shuffleboard.selectTab("Match");
-    g.DASHBOARD.ShuffleBoardTab_Match.add("Autonomous Play",autoChooser).withPosition(5,0).withSize(3, 2);
-    g.DASHBOARD.ShuffleBoardTab_Match.add("Drive State",g.DRIVETRAIN.driveMode.toString()).withPosition(14, 0).withSize(3,2);
-    g.DASHBOARD.ShuffleBoardTab_Match.add("Battery Volts", g.ROBOT.Power.getVoltage()).withPosition(5, 2).withSize(12,3).withWidget(BuiltInWidgets.kGraph);
-
-  }
   public Command getAutonomousCommand() {
     return autoChooser.getSelected();
   }

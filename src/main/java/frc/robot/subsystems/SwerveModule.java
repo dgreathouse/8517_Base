@@ -23,6 +23,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.lib.IUpdateDashboard;
 import frc.robot.lib.SwerveModuleConstants;
 import frc.robot.lib.g;
@@ -152,6 +153,10 @@ public class SwerveModule implements IUpdateDashboard{
    * Called by separate thread to put stuff to the dashboard at a slower rate than the main periodic
    */
   public void updateDashboard() {
-    
+    SmartDashboard.putNumber("Swerve/"+this.m_k.NAME+"_Velocity(ft/s)", 
+                            (m_driveMotor.getVelocity().getValueAsDouble() /   // Rot/sec /
+                            g.SWERVE.MODULE.DRIVE.WHEEL_MotRotPerMeter)        // Rot/m
+                            * g.CV.MPS_TO_FEETPERSEC);                         // ft/s
+
   }
 }

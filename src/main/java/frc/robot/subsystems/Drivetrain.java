@@ -16,10 +16,8 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.lib.DriveMode;
 import frc.robot.lib.IUpdateDashboard;
@@ -30,7 +28,7 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
   Pigeon2 m_pigeon2;
   SwerveDriveKinematics m_kinematics;
   SwerveDriveOdometry m_odometry;
-  Field2d m_field;
+
   OdometryThread m_odometryThread;
   StatusSignal<Double> m_yaw;
   StatusSignal<Double> m_angularVelocityZ;
@@ -85,8 +83,7 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
     // TODO: Adjust Kinematics for the number of swerve modules
     m_kinematics = new SwerveDriveKinematics(g.SWERVE.Modules[0].m_location, g.SWERVE.Modules[1].m_location, g.SWERVE.Modules[2].m_location);
     m_odometry = new SwerveDriveOdometry(m_kinematics, g.ROBOT.RobotActualAngle, g.SWERVE.Positions);
-    m_field = new Field2d();
-
+   
     m_turnPID.enableContinuousInput(-Math.PI, Math.PI);
     m_turnPID.setTolerance(Math.toRadians(.1), 1);    
 
@@ -146,8 +143,7 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
    * @param _enableSteer enable the Steer Motor
    * @param _enableDrive enable the Drive Motor
    */
-  public void drivePolarFieldCentric(double _driveAngle_deg, double _speed_mps, boolean _enableSteer,
-      boolean _enableDrive) {
+  public void drivePolarFieldCentric(double _driveAngle_deg, double _speed_mps, boolean _enableSteer, boolean _enableDrive) {
     double y = Math.sin(Units.degreesToRadians(_driveAngle_deg)) * _speed_mps;
     double x = Math.cos(Units.degreesToRadians(_driveAngle_deg)) * _speed_mps;
     driveAngleFieldCentric(x, y, _enableSteer, _enableDrive);
@@ -302,17 +298,23 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
    */
   public void updateDashboard() {
 
-    m_field.setRobotPose(g.ROBOT.Pose);
+    g.ROBOT.Field.setRobotPose(g.ROBOT.Pose);
     double current = 0; 
     for(int i = 0; i < g.SWERVE.Count; i++){
       current += g.SWERVE.Modules[i].getDriveCurrent();
     }
     g.SWERVE.DriveTotalCurrent = current;
-    // Drivetrain tab configure
-    // g.DASHBOARD.ShuffleBoardTab_Drivetrain.add("Drive Current (Amps)", current).withPosition(5, 0).withSize(3, 2).withWidget(BuiltInWidgets.kGraph);
+    SmartDashboard.putNumber("Swerve/Total Drive Current", g.SWERVE.DriveTotalCurrent);
 
-    // g.DASHBOARD.ShuffleBoardTab_Drivetrain.add("Robot Angle (Deg)", g.ROBOT.Pose.getRotation()).withPosition(5, 0).withSize(10, 10).withWidget(BuiltInWidgets.kGyro);
-    // g.DASHBOARD.ShuffleBoardTab_Drivetrain.add("Robot Pose X (M)", g.ROBOT.Pose.getX()).withPosition(5, 4).withSize(3, 2).withWidget(BuiltInWidgets.kTextView);
-    // g.DASHBOARD.ShuffleBoardTab_Drivetrain.add("Robot Pose X (M)", g.ROBOT.Pose.getX()).withPosition(5, 4).withSize(3, 2).withWidget(BuiltInWidgets.kTextView);
+    SmartDashboard.putData("Field", g.ROBOT.Field);
+    SmartDashboard.putNumber("Robot/Pose_X", g.ROBOT.Pose.getX());
+    SmartDashboard.putNumber("Robot/Pose_Y", g.ROBOT.Pose.getY());
+    SmartDashboard.putNumber("Robot/Voltage", g.ROBOT.Power.getVoltage());
+    SmartDashboard.putNumber("Robot/Current", g.ROBOT.Power.getTotalCurrent());
+    SmartDashboard.putNumber("Robot/Target Angle", g.ROBOT.AngleTarget_deg);
+    SmartDashboard.putNumber("Robot/Actual Angle", g.ROBOT.AngleActual_deg);
+
+    
+
   }
 }
