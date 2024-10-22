@@ -149,6 +149,9 @@ public class SwerveModule implements IUpdateDashboard{
     public double getDriveCurrent(){
         return m_driveMotor.getTorqueCurrent().getValueAsDouble();
     }
+    public double getSteerCurrent(){
+        return m_steerMotor.getTorqueCurrent().getValueAsDouble();
+    }
   /**
    * Called by separate thread to put stuff to the dashboard at a slower rate than the main periodic
    */
@@ -157,6 +160,8 @@ public class SwerveModule implements IUpdateDashboard{
                             (m_driveMotor.getVelocity().getValueAsDouble() /   // Rot/sec /
                             g.SWERVE.MODULE.DRIVE.WHEEL_MotRotPerMeter)        // Rot/m
                             * g.CV.MPS_TO_FEETPERSEC);                         // ft/s
+    SmartDashboard.putNumber("Swerve/"+this.m_k.NAME+"_Drive Current", getDriveCurrent());
+    SmartDashboard.putNumber("Swerve/"+this.m_k.NAME+"_Steer Current", getSteerCurrent());
 
   }
 }
