@@ -4,7 +4,9 @@
 
 package frc.robot.lib;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -39,10 +41,10 @@ public class g {
     }
 
     public static class ROBOT {
-        public static final double LOOP_RATE_SEC = 0.01;
+        public static final double LOOP_RATE_SEC = 0.02;
         public static volatile double AngleActual_deg = 0;
         public static volatile double AngleTarget_deg = 0;
-        public static volatile Rotation2d RobotActualAngle = new Rotation2d();
+        public static volatile Rotation2d AngleActual_rot2d = new Rotation2d();
         public static final double PERIOD = 0.02;
         public static final double BATTERY_MAX_VOLTS = 12.8;
         public static final int PD_CANID = 1; // Power Distribution, Rev or CTRE
@@ -52,7 +54,7 @@ public class g {
         public static volatile Field2d Field = new Field2d();
     }
     public static class DASHBOARD{
-        public static Set<IUpdateDashboard> updates = new HashSet<>();
+        public static List<IUpdateDashboard> updates = new ArrayList<>();
 
     }
     public static class OI {

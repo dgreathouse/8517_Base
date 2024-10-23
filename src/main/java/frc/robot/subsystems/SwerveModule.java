@@ -156,12 +156,12 @@ public class SwerveModule implements IUpdateDashboard{
    * Called by separate thread to put stuff to the dashboard at a slower rate than the main periodic
    */
   public void updateDashboard() {
-    SmartDashboard.putNumber("Swerve/"+this.m_k.NAME+"_Velocity(ft/s)", 
+    SmartDashboard.putNumber("Swerve/"+this.m_k.NAME+"/Vel(ftPsec)", 
                             (m_driveMotor.getVelocity().getValueAsDouble() /   // Rot/sec /
                             g.SWERVE.MODULE.DRIVE.WHEEL_MotRotPerMeter)        // Rot/m
                             * g.CV.MPS_TO_FEETPERSEC);                         // ft/s
-    SmartDashboard.putNumber("Swerve/"+this.m_k.NAME+"_Drive Current", getDriveCurrent());
-    SmartDashboard.putNumber("Swerve/"+this.m_k.NAME+"_Steer Current", getSteerCurrent());
+    SmartDashboard.putNumber("Swerve/"+this.m_k.NAME+"/Drive Current", getDriveCurrent());
+    SmartDashboard.putNumber("Swerve/"+this.m_k.NAME+"/Steer Current", getSteerCurrent());
 
   }
 }

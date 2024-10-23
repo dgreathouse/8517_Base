@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.autoCommandGroups.AutoDoNothing;
 import frc.robot.commands.DrivetrainDefaultCommand;
 import frc.robot.lib.DriveMode;
+import frc.robot.lib.IUpdateDashboard;
 import frc.robot.lib.g;
 
 /**
@@ -41,7 +42,7 @@ public class Robot extends TimedRobot {
     configureBindings();
 
     autoChooser.setDefaultOption("Do Nothing", new AutoDoNothing());
-    SmartDashboard.putData(autoChooser);
+    SmartDashboard.putData("Autonomous Play",autoChooser);
     
     m_telemetry = new Notifier(this::updateDashboard);
     m_telemetry.startPeriodic(0.1);
@@ -129,9 +130,12 @@ public class Robot extends TimedRobot {
   public void simulationPeriodic() {}
   /* -------- Old RobotContainer Stuff (Begin)------------- */
   private void updateDashboard(){
-    while (g.DASHBOARD.updates.iterator().hasNext()) {
-      g.DASHBOARD.updates.iterator().next().updateDashboard();
+    for (IUpdateDashboard updates : g.DASHBOARD.updates) {
+      updates.updateDashboard();
     }
+    // while (g.DASHBOARD.updates.iterator().hasNext()) {
+    //   g.DASHBOARD.updates.iterator().next().updateDashboard();
+    // }
   }
 
   private void configureBindings() {
