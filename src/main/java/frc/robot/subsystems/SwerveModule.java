@@ -39,8 +39,8 @@ public class SwerveModule implements IUpdateDashboard{
     private PIDController m_steerPID = new PIDController(g.SWERVE.MODULE.STEER.PID_kp, g.SWERVE.MODULE.STEER.PID_ki, 0);
     private PIDController m_drivePID = new PIDController(g.SWERVE.MODULE.DRIVE.PID_kp, g.SWERVE.MODULE.DRIVE.PID_ki, 0);
     private SimpleMotorFeedforward m_driveFF = new SimpleMotorFeedforward(g.SWERVE.MODULE.DRIVE.PID_ks, g.SWERVE.MODULE.DRIVE.PID_kv);
-    private VoltageOut m_steerVoltageOut = new VoltageOut(0.0);
-    private VoltageOut m_driveVoltageOut = new VoltageOut(0.0);
+    private VoltageOut m_steerVoltageOut = new VoltageOut(0.0).withEnableFOC(true);
+    private VoltageOut m_driveVoltageOut = new VoltageOut(0.0).withEnableFOC(true);
     private StatusSignal<Double> m_drivePosition;
     private StatusSignal<Double> m_driveVelocity;
     private StatusSignal<Double> m_steerPosition;
@@ -66,9 +66,9 @@ public class SwerveModule implements IUpdateDashboard{
         System.out.println(m_k.NAME + " Drive Motor TalonFX Config Status =" + status.toString());
 
         CurrentLimitsConfigs driveCurrentConfig = new CurrentLimitsConfigs()
-                .withStatorCurrentLimit(50)
+                .withStatorCurrentLimit(g.SWERVE.MODULE.DRIVE.CURRENT_LIMIT)
                 .withStatorCurrentLimitEnable(true)
-                .withSupplyCurrentLimit(50)
+                .withSupplyCurrentLimit(g.SWERVE.MODULE.DRIVE.CURRENT_LIMIT)
                 .withSupplyCurrentLimitEnable(true);
 
         status = m_driveMotor.getConfigurator().apply(driveCurrentConfig);
@@ -89,6 +89,15 @@ public class SwerveModule implements IUpdateDashboard{
         System.out.println(m_k.NAME + " Steer Motor TalonFX Config Status =" + status.toString());
         m_steerMotor.setNeutralMode(NeutralModeValue.Brake);
         
+        CurrentLimitsConfigs steerCurrentConfig = new CurrentLimitsConfigs()
+                .withStatorCurrentLimit(g.SWERVE.MODULE.STEER.CURRENT_LIMIT)
+                .withStatorCurrentLimitEnable(true)
+                .withSupplyCurrentLimit(g.SWERVE.MODULE.STEER.CURRENT_LIMIT)
+                .withSupplyCurrentLimitEnable(true);
+
+        status = m_steerMotor.getConfigurator().apply(steerCurrentConfig);
+        System.out.println(m_k.NAME + " Steer Motor Current Config Status =" + status.toString());
+
         // Configure CANCoder
         CANcoderConfiguration cancoderConfigs = new CANcoderConfiguration();
         cancoderConfigs.MagnetSensor.MagnetOffset = m_k.CANCODER_OFFSET_ROT;
@@ -120,30 +129,28 @@ public class SwerveModule implements IUpdateDashboard{
     }
 
     public double getSteerActualAngle() {
-        return m_position.angle.getDegrees() * 360 / g.SWERVE.MODULE.STEER.GEAR_RATIO;
+        return m_position.angle.getDegrees();
     }
 
     public void setDesiredState(SwerveModuleState _state, boolean _enableSteer, boolean _enableDrive) {
         SwerveModuleState optimized = SwerveModuleState.optimize(_state, m_position.angle);
         /* ------------------------------------- Steer --------------------------------------------------- */
-        if (_enableSteer) {
-
+        if (_enableSteer && g.SWERVE.MODULE.STEER.IsEnabled) {
             double steerVolts = m_steerPID.calculate(getSteerActualAngle(), optimized.angle.getDegrees());
-            m_steerMotor.setControl(m_steerVoltageOut.withOutput(steerVolts).withEnableFOC(true));
-            // m_steerMotor.setControl(null);
+            m_steerMotor.setControl(m_steerVoltageOut.withOutput(steerVolts));
         } else {
-            m_steerMotor.setControl(m_steerVoltageOut.withOutput(0).withEnableFOC(true));
+            m_steerMotor.setControl(m_steerVoltageOut.withOutput(0));
         }
         /* ------------------------------------- Drive --------------------------------------------------- */
-        if (_enableDrive) {
+        if (_enableDrive && g.SWERVE.MODULE.DRIVE.IsEnabled) {
             double driveSetVelocity_mps = optimized.speedMetersPerSecond * g.DRIVETRAIN.driveSpeedMultiplier;
             double driveVolts = m_drivePID.calculate(m_driveMotor.getVelocity().getValueAsDouble() / g.SWERVE.MODULE.DRIVE.WHEEL_MotRotPerMeter, driveSetVelocity_mps);
             driveVolts = MathUtil.clamp(driveVolts, -6, 6);
             driveVolts = driveVolts + m_driveFF.calculate(driveSetVelocity_mps);
 
-            m_driveMotor.setControl(m_driveVoltageOut.withOutput(driveVolts).withEnableFOC(true));
+            m_driveMotor.setControl(m_driveVoltageOut.withOutput(driveVolts));
         } else {
-            m_driveMotor.setControl(m_driveVoltageOut.withOutput(0).withEnableFOC(true));
+            m_driveMotor.setControl(m_driveVoltageOut.withOutput(0));
         }
     }
     public double getDriveCurrent(){
@@ -162,6 +169,7 @@ public class SwerveModule implements IUpdateDashboard{
                             * g.CV.MPS_TO_FEETPERSEC);                         // ft/s
     SmartDashboard.putNumber("Swerve/"+this.m_k.NAME+"/Drive Current", getDriveCurrent());
     SmartDashboard.putNumber("Swerve/"+this.m_k.NAME+"/Steer Current", getSteerCurrent());
-
+    SmartDashboard.putData("Swerve/"+this.m_k.NAME+"/Steer PID", m_steerPID);
+    SmartDashboard.putData("Swerve/"+this.m_k.NAME+"/Drive PID", m_drivePID);
   }
 }

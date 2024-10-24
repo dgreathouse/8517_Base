@@ -5,11 +5,9 @@
 package frc.robot.lib;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -49,9 +47,11 @@ public class g {
         public static final double BATTERY_MAX_VOLTS = 12.8;
         public static final int PD_CANID = 1; // Power Distribution, Rev or CTRE
         public static Pose2d Pose = new Pose2d();
+        public static Pose3d Pose3D = new Pose3d();
         public static final Drivetrain Drive = new Drivetrain();
         public static PowerDistribution Power = new PowerDistribution();
         public static volatile Field2d Field = new Field2d();
+        
     }
     public static class DASHBOARD{
         public static List<IUpdateDashboard> updates = new ArrayList<>();
@@ -73,6 +73,7 @@ public class g {
 
         public static Trigger DRIVER_RESET_YAW = driveController.create();
 
+        public static Trigger DRIVER_TOGGLE_DRIVETRAIN_ENABLE = driveController.touchpad();
         // Operator controller
         public static final int OPERATOR_CONTROLLER_PORT = 1;
         public static final CommandPS5Controller operatorController = new CommandPS5Controller(OPERATOR_CONTROLLER_PORT);
@@ -88,10 +89,7 @@ public class g {
         public static class MODULE {
 
             public static class DRIVE {
-                public static double PID_kp = 1.0;
-                public static double PID_ki = 0.0;
-                public static double PID_kv = 2.8256;
-                public static double PID_ks = 0.0;
+ 
                 private static final double MOTOR_PINION_TEETH = 12.0;
                 private static final double GEAR_1_TEETH = 32.0;
                 private static final double GEAR_2_DRIVE_TEETH = 28.0;
@@ -115,11 +113,18 @@ public class g {
                 // 12T 4.35 Mps = 14.27 FtPSec, 91% Eff
                 public static final double MAX_ANGULAR_VELOCITY_RadianPerSec = MAX_VELOCITY_MeterPerSec
                         * (1 / CHASSIS.WHEEL_BASE_MeterPerRad);
+                public static double PID_kp = 1.0;
+                public static double PID_ki = 0.0;
+                public static double PID_kv = g.ROBOT.BATTERY_MAX_VOLTS/MAX_VELOCITY_MeterPerSec; //2.8256;
+                public static double PID_ks = 0.0;
+                public static boolean IsEnabled = true;
+                public static final double CURRENT_LIMIT = 50;
             }
 
             public static class STEER {
                 public static double PID_kp = 0.1;
                 public static double PID_ki = 0.0;
+                public static boolean IsEnabled = true;
                 private static final double MOTOR_PINION_TEETH = 8.0;
                 private static final double MOTOR_DRIVE_GEAR_TEETH = 24.0;
                 private static final double GEAR_1_DRIVE_TEETH = 14.0;
@@ -128,6 +133,7 @@ public class g {
                 public static final double GEAR_RATIO = 1
                         / ((MOTOR_PINION_TEETH / MOTOR_DRIVE_GEAR_TEETH) * (GEAR_1_DRIVE_TEETH / GEAR_1_DRIVEN_TEETH));
                 public static final double GEAR_RATIO_TO_CANCODER = GEAR_RATIO * CANCODER_GEAR_RATIO;
+                public static final double CURRENT_LIMIT = 50;
             }
         }
     }

@@ -9,14 +9,15 @@ import com.ctre.phoenix6.hardware.Pigeon2;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.lib.DriveMode;
@@ -34,7 +35,8 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
   StatusSignal<Double> m_angularVelocityZ;
 
   private PIDController m_turnPID = new PIDController(g.DRIVETRAIN.TURN_KP, g.DRIVETRAIN.TURN_KI, g.DRIVETRAIN.TURN_KD);
-
+  Pose3d h;
+  Translation2d gh;
   /** Creates a new Drivetrain. */
 
   public Drivetrain() {
@@ -242,7 +244,10 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
   public void setDriveSpeedMultiplier(double _val) {
     g.DRIVETRAIN.driveSpeedMultiplier = _val;
   }
-
+  public void toggleMotorsEnable() {
+    g.SWERVE.MODULE.DRIVE.IsEnabled = !g.SWERVE.MODULE.DRIVE.IsEnabled;
+    g.SWERVE.MODULE.STEER.IsEnabled = !g.SWERVE.MODULE.STEER.IsEnabled;
+  }
   /**
    * Use the drive controller Left X,Y to set 1 of 8 discrete robot target angles
    * if the X and Y are greater than a preset value
@@ -326,6 +331,7 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
         g.ROBOT.AngleActual_deg = StatusSignal.getLatencyCompensatedValue(m_yaw, m_angularVelocityZ);
         g.ROBOT.AngleActual_rot2d = getRobotAngle();
         g.ROBOT.Pose = m_odometry.update(g.ROBOT.AngleActual_rot2d, g.SWERVE.Positions);
+        g.ROBOT.Pose3D = new Pose3d(g.ROBOT.Pose);
         try {
           Thread.sleep(5);
         } catch (InterruptedException e) {
@@ -348,8 +354,9 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
     }
     g.SWERVE.DriveTotalCurrent = current;
     SmartDashboard.putNumber("Swerve/Total Drive Current", g.SWERVE.DriveTotalCurrent);
-
+    SmartDashboard.putData("Drive Rotate PID", m_turnPID);
     SmartDashboard.putData("Field", g.ROBOT.Field);
+    
     SmartDashboard.putNumber("Robot/Pose_X", g.ROBOT.Pose.getX());
     SmartDashboard.putNumber("Robot/Pose_Y", g.ROBOT.Pose.getY());
     SmartDashboard.putNumber("Robot/Voltage", g.ROBOT.Power.getVoltage());

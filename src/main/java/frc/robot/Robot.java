@@ -55,7 +55,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-
+    
   }
 
   /**
@@ -133,9 +133,6 @@ public class Robot extends TimedRobot {
     for (IUpdateDashboard updates : g.DASHBOARD.updates) {
       updates.updateDashboard();
     }
-    // while (g.DASHBOARD.updates.iterator().hasNext()) {
-    //   g.DASHBOARD.updates.iterator().next().updateDashboard();
-    // }
   }
 
   private void configureBindings() {
@@ -148,6 +145,8 @@ public class Robot extends TimedRobot {
 
     g.OI.DRIVER_DRIVE_MODE_SPEED_HI.onTrue(new InstantCommand(() -> g.ROBOT.Drive.setDriveSpeedMultiplier(1.0)));
     g.OI.DRIVER_DRIVE_MODE_SPEED_HI.onTrue(new InstantCommand(() -> g.ROBOT.Drive.setDriveSpeedMultiplier(0.5)));
+
+    g.OI.DRIVER_TOGGLE_DRIVETRAIN_ENABLE.onTrue(new InstantCommand(() -> g.ROBOT.Drive.toggleMotorsEnable()));
 
   }
 
