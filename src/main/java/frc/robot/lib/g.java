@@ -15,6 +15,8 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveModule;
 
 /** Add your docs here. */
@@ -25,6 +27,10 @@ public class g {
     }
 
     public static class CAN_IDS_CANIVORE {
+        // 10-25 taken for drivetrain
+        public static final int SHOOTER_LEFT = 30;
+        public static final int SHOOTER_RIGHT = 31;
+        public static final int INTAKE = 40;
         public static final String NAME = "CANivore";
         public static final int PIGEON2 = 5;
         public static final double UPDATE_FREQ_HZ = 250;
@@ -49,6 +55,8 @@ public class g {
         public static Pose2d Pose = new Pose2d();
         public static Pose3d Pose3D = new Pose3d();
         public static final Drivetrain Drive = new Drivetrain();
+        public static final ShooterSubsystem Shooter = new ShooterSubsystem();
+        public static final IntakeSubsystem Intake = new IntakeSubsystem();
         public static PowerDistribution Power = new PowerDistribution();
         public static volatile Field2d Field = new Field2d();
         
@@ -74,6 +82,14 @@ public class g {
         public static Trigger DRIVER_RESET_YAW = driveController.create();
 
         public static Trigger DRIVER_TOGGLE_DRIVETRAIN_ENABLE = driveController.touchpad();
+
+        public static Trigger DRIVER_SHOOTER_HIGH = driveController.square();
+        public static Trigger DRIVER_SHOOTER_LOW = driveController.circle();
+        public static Trigger DRIVER_SHOOTER_OFF = driveController.R3();
+
+        public static Trigger DRIVER_SHOOTER_FLIPPER_SHOOT = driveController.triangle();
+        public static Trigger DRIVER_SHOOTER_FLIPPER_BACK = driveController.cross();
+
         // Operator controller
         public static final int OPERATOR_CONTROLLER_PORT = 1;
         public static final CommandPS5Controller operatorController = new CommandPS5Controller(OPERATOR_CONTROLLER_PORT);
@@ -151,6 +167,10 @@ public class g {
         public static DriveMode driveMode = DriveMode.ANGLE_FIELD_CENTRIC;
         public static double driveSpeedMultiplier = 1.0;
         public static final double ROTATE_FIELDCENTRIC_SPEED_RadPSec = 10.0;
+    }
+    public static class SHOOTER{
+        public static FlipperStates flipperState = FlipperStates.BACK;
+        public static ShooterState shooterState = ShooterState.OFF;
     }
 
 }
