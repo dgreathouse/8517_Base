@@ -16,7 +16,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
   /** Creates a new Intake. */
   public IntakeSubsystem() {
-    m_leftMotor = new TalonFX(g.CAN_IDS_CANIVORE.INTAKE, g.CAN_IDS_CANIVORE.NAME);
+    m_leftMotor = new TalonFX(g.CAN_IDS_ROBORIO.INTAKE, g.CAN_IDS_ROBORIO.NAME);
   }
 
   @Override

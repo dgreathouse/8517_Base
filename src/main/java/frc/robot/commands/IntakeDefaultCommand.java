@@ -14,12 +14,13 @@ public class IntakeDefaultCommand extends Command {
   public IntakeDefaultCommand(IntakeSubsystem _intake) {
     m_inatke = _intake;
     addRequirements(m_inatke);
-    // Use addRequirements() here to declare subsystem dependencies.
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override

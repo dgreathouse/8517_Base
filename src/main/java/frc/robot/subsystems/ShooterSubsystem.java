@@ -28,8 +28,8 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   private void initialize() {
-    m_leftMotor = new TalonFX(g.CAN_IDS_CANIVORE.SHOOTER_LEFT, g.CAN_IDS_CANIVORE.NAME);
-    m_rightMotor = new TalonFX(g.CAN_IDS_CANIVORE.SHOOTER_RIGHT, g.CAN_IDS_CANIVORE.NAME);
+    m_leftMotor = new TalonFX(g.CAN_IDS_ROBORIO.SHOOTER_LEFT, g.CAN_IDS_ROBORIO.NAME);
+    m_rightMotor = new TalonFX(g.CAN_IDS_ROBORIO.SHOOTER_RIGHT, g.CAN_IDS_ROBORIO.NAME);
     m_leftMotor.setNeutralMode(NeutralModeValue.Brake);
     m_rightMotor.setNeutralMode(NeutralModeValue.Brake);
     m_rightMotor.setInverted(true);

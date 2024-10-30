@@ -19,7 +19,6 @@ import frc.robot.commands.ShooterDefaultCommand;
 import frc.robot.lib.DriveMode;
 import frc.robot.lib.IUpdateDashboard;
 import frc.robot.lib.g;
-import frc.robot.subsystems.ShooterSubsystem;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -182,6 +181,11 @@ public class Robot extends TimedRobot {
     g.OI.DRIVER_SHOOTER_HIGH.onTrue(new InstantCommand(() -> g.ROBOT.Shooter.setShooterFeedLong()));
     g.OI.DRIVER_SHOOTER_LOW.onTrue(new InstantCommand(() -> g.ROBOT.Shooter.setShooterFeedShort()));
     g.OI.DRIVER_SHOOTER_OFF.onTrue(new InstantCommand(() -> g.ROBOT.Shooter.setShooterOff()));
+
+    g.OI.DRIVER_SHOOTER_FLIPPER_SHOOT.onTrue(new InstantCommand(() -> g.ROBOT.Shooter.setFlipperExtended()));
+    g.OI.DRIVER_SHOOTER_FLIPPER_BACK.onTrue(new InstantCommand(() -> g.ROBOT.Shooter.setFlippersRetracted()));
+
+
   }
 
   public Command getAutonomousCommand() {

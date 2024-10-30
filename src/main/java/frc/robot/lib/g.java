@@ -23,14 +23,15 @@ import frc.robot.subsystems.SwerveModule;
 public class g {
     public static class CAN_IDS_ROBORIO {
         public static final String NAME = "rio";
+        public static final int SHOOTER_LEFT = 30;
+        public static final int SHOOTER_RIGHT = 31;
+        public static final int INTAKE = 40;
 
     }
 
     public static class CAN_IDS_CANIVORE {
         // 10-25 taken for drivetrain
-        public static final int SHOOTER_LEFT = 30;
-        public static final int SHOOTER_RIGHT = 31;
-        public static final int INTAKE = 40;
+ 
         public static final String NAME = "CANivore";
         public static final int PIGEON2 = 5;
         public static final double UPDATE_FREQ_HZ = 250;
