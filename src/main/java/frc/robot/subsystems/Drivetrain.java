@@ -35,8 +35,7 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
   StatusSignal<Double> m_angularVelocityZ;
 
   private PIDController m_turnPID = new PIDController(g.DRIVETRAIN.TURN_KP, g.DRIVETRAIN.TURN_KI, g.DRIVETRAIN.TURN_KD);
-  Pose3d h;
-  Translation2d gh;
+
   /** Creates a new Drivetrain. */
 
   public Drivetrain() {
@@ -252,10 +251,11 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
    * if the X and Y are greater than a preset value
    */
   public void setAngleTarget() {
-    double x = g.OI.driveController.getLeftX();
-    double y = g.OI.driveController.getLeftY();
+    double x = -g.OI.driveController.getRightX();
+    double y = -g.OI.driveController.getRightY();
     double hyp = Math.hypot(x, y);
-    double actualAngle = 0.0;
+    double actualAngle = Math.toDegrees(Math.atan2(x,y));
+    SmartDashboard.putNumber("Robot/actualTargetAngle", actualAngle);
     if (Math.abs(hyp) > g.OI.ANGLE_TARGET_DEADBAND) {
       if (actualAngle >= -22.5 && actualAngle <= 22.5) { // North
         g.ROBOT.AngleTarget_deg = 0.0;

@@ -82,12 +82,7 @@ public class g {
 
         public static Trigger DRIVER_TOGGLE_DRIVETRAIN_ENABLE = driveController.touchpad();
 
-        public static Trigger DRIVER_SHOOTER_HIGH = driveController.square();
-        public static Trigger DRIVER_SHOOTER_LOW = driveController.circle();
-        public static Trigger DRIVER_SHOOTER_OFF = driveController.R3();
-
-        public static Trigger DRIVER_SHOOTER_FLIPPER_SHOOT = driveController.triangle();
-        public static Trigger DRIVER_SHOOTER_FLIPPER_BACK = driveController.cross();
+        public static Trigger DRIVER_RINGO = driveController.cross();
 
         // Operator controller
         public static final int OPERATOR_CONTROLLER_PORT = 1;
@@ -160,8 +155,8 @@ public class g {
         private static final double WHEEL_BASE_MeterPerRad = WHEEL_BASE_CIRCUMFERENCE_m / (2 * Math.PI);
     }
     public static class DRIVETRAIN {
-        public static final double TURN_KP = 10;
-        public static final double TURN_KI = 0.0;
+        public static final double TURN_KP = 4.5;
+        public static final double TURN_KI = 1.50;
         public static final double TURN_KD = 0.0;
         public static DriveMode driveMode = DriveMode.ANGLE_FIELD_CENTRIC;
         public static double driveSpeedMultiplier = 1.0;

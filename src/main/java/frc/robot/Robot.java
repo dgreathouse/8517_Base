@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.autoCommandGroups.AutoDoNothing;
+import frc.robot.commands.AutoRingoCommand;
 import frc.robot.commands.DrivetrainDefaultCommand;
 import frc.robot.lib.DriveMode;
 import frc.robot.lib.IUpdateDashboard;
@@ -172,7 +173,7 @@ public class Robot extends TimedRobot {
 
     g.OI.DRIVER_TOGGLE_DRIVETRAIN_ENABLE.onTrue(new InstantCommand(() -> g.ROBOT.Drive.toggleMotorsEnable()));
 
-
+    g.OI.DRIVER_RINGO.whileTrue(new AutoRingoCommand(12));
 
   }
 
