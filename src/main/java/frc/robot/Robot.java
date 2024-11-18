@@ -14,8 +14,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.autoCommandGroups.AutoDoNothing;
 import frc.robot.commands.DrivetrainDefaultCommand;
-import frc.robot.commands.IntakeDefaultCommand;
-import frc.robot.commands.ShooterDefaultCommand;
 import frc.robot.lib.DriveMode;
 import frc.robot.lib.IUpdateDashboard;
 import frc.robot.lib.g;
@@ -33,8 +31,6 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
   /* -------- Old RobotContainer Stuff (Begin)------------- */
   private DrivetrainDefaultCommand m_drivetrainDefaultCommand = new DrivetrainDefaultCommand(g.ROBOT.Drive);
-  private ShooterDefaultCommand m_shooterDefaultCommand = new ShooterDefaultCommand(g.ROBOT.Shooter);
-  private IntakeDefaultCommand m_intakeDefaultCommand = new IntakeDefaultCommand(g.ROBOT.Intake);
   private SendableChooser<Command> autoChooser = new SendableChooser<>();
   private Notifier m_telemetry;
   /* -------- Old RobotContainer Stuff (Begin)------------- */
@@ -44,8 +40,6 @@ public class Robot extends TimedRobot {
     LiveWindow.disableAllTelemetry();
     /* -------- Old RobotContainer Stuff (Begin)------------- */
     g.ROBOT.Drive.setDefaultCommand(m_drivetrainDefaultCommand);
-    g.ROBOT.Intake.setDefaultCommand(m_intakeDefaultCommand);
-    g.ROBOT.Shooter.setDefaultCommand(m_shooterDefaultCommand);
     configureBindings();
 
     autoChooser.setDefaultOption("Do Nothing", new AutoDoNothing());
@@ -178,12 +172,6 @@ public class Robot extends TimedRobot {
 
     g.OI.DRIVER_TOGGLE_DRIVETRAIN_ENABLE.onTrue(new InstantCommand(() -> g.ROBOT.Drive.toggleMotorsEnable()));
 
-    g.OI.DRIVER_SHOOTER_HIGH.onTrue(new InstantCommand(() -> g.ROBOT.Shooter.setShooterFeedLong()));
-    g.OI.DRIVER_SHOOTER_LOW.onTrue(new InstantCommand(() -> g.ROBOT.Shooter.setShooterFeedShort()));
-    g.OI.DRIVER_SHOOTER_OFF.onTrue(new InstantCommand(() -> g.ROBOT.Shooter.setShooterOff()));
-
-    g.OI.DRIVER_SHOOTER_FLIPPER_SHOOT.onTrue(new InstantCommand(() -> g.ROBOT.Shooter.setFlipperExtended()));
-    g.OI.DRIVER_SHOOTER_FLIPPER_BACK.onTrue(new InstantCommand(() -> g.ROBOT.Shooter.setFlippersRetracted()));
 
 
   }

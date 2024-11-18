@@ -141,11 +141,9 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
    * @param _enableDrive enable the Drive motor
    */
   public void driveAngleFieldCentric(double _xSpeed, double _ySpeed, boolean _enableSteer, boolean _enableDrive) {
-    double rotationalSpeed = m_turnPID.calculate(g.ROBOT.AngleActual_rot2d.getRadians(),
-        Math.toRadians(g.ROBOT.AngleTarget_deg));
+    double rotationalSpeed = m_turnPID.calculate(g.ROBOT.AngleActual_rot2d.getRadians(), Math.toRadians(g.ROBOT.AngleTarget_deg));
     rotationalSpeed = MathUtil.applyDeadband(rotationalSpeed, 0.01);
-    var robotCentricSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(_xSpeed, _ySpeed, rotationalSpeed,
-        g.ROBOT.AngleActual_rot2d);
+    var robotCentricSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(_xSpeed, _ySpeed, rotationalSpeed,g.ROBOT.AngleActual_rot2d);
     var swerveStates = m_kinematics.toSwerveModuleStates(robotCentricSpeeds);
     setSwerveModules(swerveStates, _enableSteer, _enableDrive);
   }

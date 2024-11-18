@@ -15,8 +15,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.Drivetrain;
-import frc.robot.subsystems.IntakeSubsystem;
-import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveModule;
 
 /** Add your docs here. */
@@ -56,8 +54,6 @@ public class g {
         public static Pose2d Pose = new Pose2d();
         public static Pose3d Pose3D = new Pose3d();
         public static final Drivetrain Drive = new Drivetrain();
-        public static final ShooterSubsystem Shooter = new ShooterSubsystem();
-        public static final IntakeSubsystem Intake = new IntakeSubsystem();
         public static PowerDistribution Power = new PowerDistribution();
         public static volatile Field2d Field = new Field2d();
         
@@ -168,10 +164,6 @@ public class g {
         public static DriveMode driveMode = DriveMode.ANGLE_FIELD_CENTRIC;
         public static double driveSpeedMultiplier = 1.0;
         public static final double ROTATE_FIELDCENTRIC_SPEED_RadPSec = 10.0;
-    }
-    public static class SHOOTER{
-        public static FlipperStates flipperState = FlipperStates.BACK;
-        public static ShooterState shooterState = ShooterState.OFF;
     }
 
 }
