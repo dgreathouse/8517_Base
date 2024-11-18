@@ -54,23 +54,23 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
 
     // Define the swerve module constants for each module.
     g.SWERVE.Modules[0] = new SwerveModule(new SwerveModuleConstants(
-        "FL",
-        12, false,
+        "BR",
+        12, true,
         22, true,
-        2, 0.2234,
-        g.CHASSIS.WHEEL_BASE_X_m / 2.0, g.CHASSIS.WHEEL_BASE_Y_m / 2.0));
+        2, 0.4304,
+        -g.CHASSIS.WHEEL_BASE_X_m / 2.0, -g.CHASSIS.WHEEL_BASE_Y_m / 2.0));
     g.SWERVE.Modules[1] = new SwerveModule(new SwerveModuleConstants(
-        "FR",
-        13, true,
+        "BL",
+        13, false,
         23, true,
-        3, 0.03637,
-        g.CHASSIS.WHEEL_BASE_X_m / 2.0, -g.CHASSIS.WHEEL_BASE_Y_m / 2.0));
+        3, -0.1567,
+        -g.CHASSIS.WHEEL_BASE_X_m / 2.0, g.CHASSIS.WHEEL_BASE_Y_m / 2.0));
     g.SWERVE.Modules[2] = new SwerveModule(new SwerveModuleConstants(
-        "B",
-        11, false,
+        "F",
+        11, true,
         21, true,
-        1, -0.2324,
-        -g.CHASSIS.WHEEL_BASE_X_m / 2.0, 0.0));
+        1, 0.04785,
+        g.CHASSIS.WHEEL_BASE_X_m / 2.0, 0.0));
     if (g.SWERVE.Count == 4) {
       g.SWERVE.Modules[3] = new SwerveModule(new SwerveModuleConstants(
           "BL",
@@ -136,15 +136,16 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
    * g.ROBOT.AngleTarget_deg
    * 
    * @param _xSpeeds     The requested X speed in MPS
-   * @param _ySpeeds     The requested Y speed in MPS
+   * @param _ySpeeds     The requested  Y speed in MPS
    * @param _enableSteer enable the Steer motor
    * @param _enableDrive enable the Drive motor
    */
   public void driveAngleFieldCentric(double _xSpeed, double _ySpeed, boolean _enableSteer, boolean _enableDrive) {
-    double rotationalSpeed = m_turnPID.calculate(g.ROBOT.AngleActual_rot2d.getRadians(), Math.toRadians(g.ROBOT.AngleTarget_deg));
+    double rotationalSpeed = m_turnPID.calculate(g.ROBOT.AngleActual_rot2d.getRadians(),Math.toRadians(g.ROBOT.AngleTarget_deg));
     rotationalSpeed = MathUtil.applyDeadband(rotationalSpeed, 0.01);
-    var robotCentricSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(_xSpeed, _ySpeed, rotationalSpeed,g.ROBOT.AngleActual_rot2d);
-    var swerveStates = m_kinematics.toSwerveModuleStates(robotCentricSpeeds);
+    ChassisSpeeds robotCentricSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(_xSpeed, _ySpeed, rotationalSpeed,
+        g.ROBOT.AngleActual_rot2d);
+    SwerveModuleState[] swerveStates = m_kinematics.toSwerveModuleStates(robotCentricSpeeds);
     setSwerveModules(swerveStates, _enableSteer, _enableDrive);
   }
 
@@ -288,7 +289,7 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
   }
 
   private Rotation2d getRobotAngle() {
-    return new Rotation2d(g.ROBOT.AngleActual_deg);
+    return new Rotation2d(Math.toRadians(g.ROBOT.AngleActual_deg));
   }
 
   // This method will be called once per scheduler run
@@ -361,6 +362,5 @@ public class Drivetrain extends SubsystemBase implements IUpdateDashboard {
     SmartDashboard.putNumber("Robot/Current", g.ROBOT.Power.getTotalCurrent());
     SmartDashboard.putNumber("Robot/Target Angle", g.ROBOT.AngleTarget_deg);
     SmartDashboard.putNumber("Robot/Actual Angle", g.ROBOT.AngleActual_deg);
-
   }
 }

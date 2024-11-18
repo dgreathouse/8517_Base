@@ -84,7 +84,7 @@ public class SwerveModule implements IUpdateDashboard{
         steerConfigs.MotorOutput.Inverted = m_k.STEER_IS_REVERSED ? InvertedValue.Clockwise_Positive
                 : InvertedValue.CounterClockwise_Positive;
 
-        steerConfigs.withOpenLoopRamps(new OpenLoopRampsConfigs().withVoltageOpenLoopRampPeriod(1));
+        //steerConfigs.withOpenLoopRamps(new OpenLoopRampsConfigs().withVoltageOpenLoopRampPeriod(1));
         status = m_steerMotor.getConfigurator().apply(steerConfigs);
         System.out.println(m_k.NAME + " Steer Motor TalonFX Config Status =" + status.toString());
         m_steerMotor.setNeutralMode(NeutralModeValue.Brake);

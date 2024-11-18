@@ -35,8 +35,8 @@ public class DrivetrainDefaultCommand extends Command {
   public void execute() {
 
     // get thumbstick values
-    double leftYRaw = -g.OI.driveController.getLeftY();
-    double leftXRaw = -g.OI.driveController.getLeftX();
+    double leftYRaw = -g.OI.driveController.getLeftX();
+    double leftXRaw = -g.OI.driveController.getLeftY();
     double rightXRaw = -g.OI.driveController.getRightX();
 
     // Limit the inputs for a deadband related to the joystick
@@ -50,8 +50,8 @@ public class DrivetrainDefaultCommand extends Command {
     rightXFiltered = m_stickLimiterRX.calculate(rightXFiltered);
 
     // Set the speed variables for the chassis speeds
-    m_speeds.vxMetersPerSecond = leftYFiltered * g.SWERVE.MODULE.DRIVE.MAX_VELOCITY_MeterPerSec;
-    m_speeds.vyMetersPerSecond = leftXFiltered * g.SWERVE.MODULE.DRIVE.MAX_VELOCITY_MeterPerSec;
+    m_speeds.vxMetersPerSecond = leftXFiltered * g.SWERVE.MODULE.DRIVE.MAX_VELOCITY_MeterPerSec;
+    m_speeds.vyMetersPerSecond = leftYFiltered * g.SWERVE.MODULE.DRIVE.MAX_VELOCITY_MeterPerSec;
     m_speeds.omegaRadiansPerSecond = rightXFiltered * g.SWERVE.MODULE.DRIVE.MAX_ANGULAR_VELOCITY_RadianPerSec;
 
     switch (g.DRIVETRAIN.driveMode) {

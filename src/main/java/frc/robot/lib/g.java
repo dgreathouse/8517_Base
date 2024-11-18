@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.Drivetrain;
+
 import frc.robot.subsystems.SwerveModule;
 
 /** Add your docs here. */
@@ -54,6 +55,7 @@ public class g {
         public static Pose2d Pose = new Pose2d();
         public static Pose3d Pose3D = new Pose3d();
         public static final Drivetrain Drive = new Drivetrain();
+ 
         public static PowerDistribution Power = new PowerDistribution();
         public static volatile Field2d Field = new Field2d();
         
@@ -151,8 +153,8 @@ public class g {
         }
     }
     public static class CHASSIS {
-        public static final double WHEEL_BASE_Y_m = 0.47738;
-        public static final double WHEEL_BASE_X_m = 0.47851;
+        public static final double WHEEL_BASE_Y_m = 0.4862;
+        public static final double WHEEL_BASE_X_m = 0.6076;
         private static final double WHEEL_BASE_XY_AVG_m = (WHEEL_BASE_Y_m + WHEEL_BASE_X_m) / 2.0;
         private static final double WHEEL_BASE_CIRCUMFERENCE_m = Math.PI * WHEEL_BASE_XY_AVG_m;
         private static final double WHEEL_BASE_MeterPerRad = WHEEL_BASE_CIRCUMFERENCE_m / (2 * Math.PI);
@@ -165,5 +167,6 @@ public class g {
         public static double driveSpeedMultiplier = 1.0;
         public static final double ROTATE_FIELDCENTRIC_SPEED_RadPSec = 10.0;
     }
+
 
 }
