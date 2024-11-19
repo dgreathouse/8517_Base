@@ -4,7 +4,7 @@
 
 package frc.robot.commands;
 
-import org.photonvision.PhotonCamera;
+
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -21,8 +21,8 @@ public class AutoRingoCommand extends Command {
   Drivetrain m_drive;
   double[] x = {4.0,27.5}; // Area
   double[] y = {80,32}; // Inches
-  PIDController turnPID = new PIDController(0, 0, 0);
-  PIDController drivePID = new PIDController(0, 0, 0);
+  PIDController turnPID = new PIDController(0.05, 0, 0);
+  PIDController drivePID = new PIDController(0.01, 0, 0);
   ChassisSpeeds m_speeds = new ChassisSpeeds();
   /** Creates a new AutoRingoCommand. */
   public AutoRingoCommand(double _inches) {
@@ -45,13 +45,14 @@ public class AutoRingoCommand extends Command {
     SmartDashboard.putBoolean("Vision/Note Visible", data.isNote);
     double distance = Interpolate.getY(x,y,data.distance);
     SmartDashboard.putNumber("Vision/Note Inches", Interpolate.getY(x, y, data.distance));
-    double xDis = drivePID.calculate(distance,40);
-    double rot = turnPID.calculate(data.yaw);
-    m_speeds.vxMetersPerSecond = 0;
-    m_speeds.vyMetersPerSecond = xDis;
+    double xDis = -drivePID.calculate(distance,40);
+    double rot = turnPID.calculate(data.yaw,0);
+    m_speeds.vxMetersPerSecond = xDis;
+    m_speeds.vyMetersPerSecond = 0;
     m_speeds.omegaRadiansPerSecond = rot;
     m_drive.driveRobotCentric(m_speeds);
-
+    SmartDashboard.putNumber("Vision/Note xDis", xDis);
+    SmartDashboard.putNumber("Vision/Note rot", rot);
     // Area 27.5=32in is the closest, Area 4=80in is the farthest
     // 
 
