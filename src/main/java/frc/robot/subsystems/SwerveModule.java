@@ -58,7 +58,7 @@ public class SwerveModule implements IUpdateDashboard{
         driveConfigs.MotorOutput.Inverted = m_k.DRIVE_IS_REVERSED ? InvertedValue.Clockwise_Positive
                 : InvertedValue.CounterClockwise_Positive;
                 
-        //driveConfigs.withOpenLoopRamps(new OpenLoopRampsConfigs().withVoltageOpenLoopRampPeriod(1));
+        driveConfigs.withOpenLoopRamps(new OpenLoopRampsConfigs().withVoltageOpenLoopRampPeriod(0.1));
         m_driveMotor.setNeutralMode(NeutralModeValue.Brake);
 
 
